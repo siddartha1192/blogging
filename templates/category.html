@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - TechBlog{% endblock %}
+
+{% block content %}
+<!-- Category Header -->
+<section class="container mt-4 mb-5">
+    <div class="category-header category-{{ category.slug }}">
+        {% if category.slug == 'finance' %}
+        <i class="bi bi-graph-up-arrow display-1 mb-3"></i>
+        {% elif category.slug == 'automation' %}
+        <i class="bi bi-robot display-1 mb-3"></i>
+        {% elif category.slug == 'tech-news' %}
+        <i class="bi bi-newspaper display-1 mb-3"></i>
+        {% endif %}
+        <h1 class="display-4 fw-bold">{{ category.name }}</h1>
+        <p class="lead">{{ category.description }}</p>
+    </div>
+</section>
+
+<!-- Category Posts -->
+<section class="container mb-5">
+    <h2 class="mb-4">All {{ category.name }} Articles</h2>
+    
+    {% if posts %}
+    <div class="row">
+        {% for post in posts %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="post-card">
+                <a href="{{ url_for('post', slug=post.slug) }}" class="text-decoration-none">
+                    <img src="{{ post.featured_image }}" alt="{{ post.title }}" class="post-image w-100">
+                    <div class="post-content">
+                        <span class="post-badge category-{{ category.slug }}">{{ category.name }}</span>
+                        <h3 class="post-title">{{ post.title }}</h3>
+                        <p class="post-excerpt">{{ post.excerpt }}</p>
+                        <div class="post-meta">
+                            <div class="post-author">
+                                <img src="{{ post.author.avatar }}" alt="{{ post.author.name }}" class="author-avatar">
+                                <span>{{ post.author.name }}</span>
+                            </div>
+                            <span>{{ post.publish_date.strftime('%b %d, %Y') }}</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <h3 class="h5">No Articles Found</h3>
+        <p>There are no articles in this category yet. Check back later!</p>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Newsletter -->
+<section class="container mb-5">
+    <div class="newsletter text-center">
+        <h2 class="mb-3">Stay Updated with the Latest in Tech</h2>
+        <p class="mb-4">Subscribe to our newsletter to receive the freshest tech news, tutorials, and exclusive content right in your inbox.</p>
+        <div class="alert-container mb-3"></div>
+        <form id="newsletterForm" class="newsletter-form">
+            <div class="input-group mb-3">
+                <input type="email" class="form-control" placeholder="Enter your email" aria-label="Email" required>
+                <button class="btn btn-light" type="submit">Subscribe</button>
+            </div>
+            <small class="text-light">We respect your privacy. Unsubscribe at any time.</small>
+        </form>
+    </div>
+</section>
+{% endblock %}

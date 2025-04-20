@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import markdown
@@ -17,6 +17,15 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-testing')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///techblog.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# Context processors
+@app.context_processor
+def inject_now():
+    return {'now': datetime.utcnow()}
+
+@app.context_processor
+def inject_categories():
+    return {'categories': Category.query.all()}
 
 # Define models
 class Category(db.Model):
@@ -331,8 +340,37 @@ While fully fault-tolerant, general-purpose quantum computers remain years away,
             
             db.session.commit()
 
-# Initialize the database
+# Error handlers
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+# Create placeholder images for avatars and posts
+def create_placeholder_images():
+    avatar_dir = os.path.join(app.static_folder, 'images/avatars')
+    posts_dir = os.path.join(app.static_folder, 'images/posts')
+    
+    # Create avatar placeholders
+    if not os.path.exists(os.path.join(avatar_dir, 'avatar-1.jpg')):
+        with open(os.path.join(avatar_dir, 'avatar-1.jpg'), 'w') as f:
+            f.write('placeholder')
+    
+    if not os.path.exists(os.path.join(avatar_dir, 'avatar-2.jpg')):
+        with open(os.path.join(avatar_dir, 'avatar-2.jpg'), 'w') as f:
+            f.write('placeholder')
+    
+    # Create post image placeholders
+    post_images = ['crypto-banking.jpg', 'smart-home.jpg', 'apple-chip.jpg', 
+                  'blockchain.jpg', 'rpa.jpg', 'quantum.jpg']
+    
+    for img in post_images:
+        if not os.path.exists(os.path.join(posts_dir, img)):
+            with open(os.path.join(posts_dir, img), 'w') as f:
+                f.write('placeholder')
+
+# Initialize the database and create placeholder images
 init_db()
+create_placeholder_images()
 
 # Run the application
 if __name__ == '__main__':

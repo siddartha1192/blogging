@@ -3,60 +3,108 @@
 {% block title %}{{ post.title }} - TechBlog{% endblock %}
 
 {% block content %}
-<article class="container mt-4 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Post Header -->
-            <div class="post-header">
-                <a href="{{ url_for('category', slug=post.category.slug) }}">
-                    <span class="post-badge category-{{ post.category.slug }}">{{ post.category.name }}</span>
-                </a>
-                <h1 class="display-5 fw-bold mt-3 mb-4">{{ post.title }}</h1>
+<!-- Post Header -->
+<header class="post-header py-5" style="background-color: {{ post.category.color }}15;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="mb-3">
+                    <a href="{{ url_for('category', slug=post.category.slug) }}" class="badge text-decoration-none" style="background-color: {{ post.category.color }}">
+                        {{ post.category.name }}
+                    </a>
+                </div>
+                <h1 class="post-title display-4 fw-bold mb-3">{{ post.title }}</h1>
+                <p class="lead mb-4">{{ post.excerpt }}</p>
                 <div class="d-flex align-items-center mb-4">
-                    <img src="{{ post.author.avatar }}" alt="{{ post.author.name }}" class="author-avatar me-3" style="width: 48px; height: 48px;">
+                    <img src="{{ post.author.avatar }}" alt="{{ post.author.name }}" class="rounded-circle me-3" width="50" height="50">
                     <div>
                         <div class="fw-bold">{{ post.author.name }}</div>
-                        <div class="text-muted">{{ post.publish_date.strftime('%B %d, %Y') }} · {{ post.read_time }} min read</div>
+                        <div class="text-muted">
+                            {{ post.publish_date.strftime('%B %d, %Y') }} · {{ post.read_time }} min read
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Featured Image -->
-            <img src="{{ post.featured_image }}" alt="{{ post.title }}" class="post-featured-image">
-            
-            <!-- Post Content -->
-            <div class="post-content">
-                {{ post.content_html|safe }}
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<section class="post-content py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="post-featured-image mb-5">
+                    <img src="{{ post.featured_image }}" alt="{{ post.title }}" class="img-fluid rounded">
+                </div>
+                <div class="post-body prose">
+                    {{ post.content_html | safe }}
+                </div>
+                <hr class="my-5">
+                
+                <!-- Author Bio -->
+                <div class="author-bio p-4 rounded mb-5">
+                    <div class="d-flex">
+                        <img src="{{ post.author.avatar }}" alt="{{ post.author.name }}" class="rounded-circle me-3" width="80" height="80">
+                        <div>
+                            <h5 class="mb-1">About {{ post.author.name }}</h5>
+                            <p>{{ post.author.bio }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Topics -->
+                <div class="post-topics mb-5">
+                    <h5 class="mb-3">Topics</h5>
+                    <div class="topic-tags">
+                        {% for topic in post.topics %}
+                        <a href="{{ url_for('topic', slug=topic.slug) }}" class="topic-tag">{{ topic.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            
-            <hr class="my-5">
-            
-            <!-- Trending Topics -->
-            <div class="mb-5">
-                <h3 class="mb-3">Trending Topics</h3>
-                <div>
+        </div>
+    </div>
+</section>
+
+<!-- Trending Topics -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">Explore More Topics</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="topic-tags text-center">
                     {% for topic in trending_topics %}
-                    <a href="{{ url_for('topic', slug=topic.slug) }}" class="topic-tag">#{{ topic.name }}</a>
+                    <a href="{{ url_for('topic', slug=topic.slug) }}" class="topic-tag">{{ topic.name }}</a>
                     {% endfor %}
                 </div>
             </div>
         </div>
     </div>
-</article>
-
-<!-- Newsletter -->
-<section class="container mb-5">
-    <div class="newsletter text-center">
-        <h2 class="mb-3">Stay Updated with the Latest in Tech</h2>
-        <p class="mb-4">Subscribe to our newsletter to receive the freshest tech news, tutorials, and exclusive content right in your inbox.</p>
-        <div class="alert-container mb-3"></div>
-        <form id="newsletterForm" class="newsletter-form">
-            <div class="input-group mb-3">
-                <input type="email" class="form-control" placeholder="Enter your email" aria-label="Email" required>
-                <button class="btn btn-light" type="submit">Subscribe</button>
-            </div>
-            <small class="text-light">We respect your privacy. Unsubscribe at any time.</small>
-        </form>
-    </div>
 </section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.prose {
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+.prose p {
+    margin-bottom: 1.5rem;
+}
+.prose h2 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+.prose h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+.author-bio {
+    background-color: #f8f9fa;
+}
+</style>
 {% endblock %}

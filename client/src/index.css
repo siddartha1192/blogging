@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-gray-50 text-foreground;
+  }
+}
+
+@layer utilities {
+  .nav-link::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 2px;
+    @apply bg-primary;
+    transition: width 0.3s;
+  }
+  
+  .nav-link:hover::after, .nav-link.active::after {
+    width: 100%;
+  }
+  
+  .finance-badge {
+    @apply bg-[#F59E0B];
+  }
+  
+  .automation-badge {
+    @apply bg-[#10B981];
+  }
+  
+  .technews-badge {
+    @apply bg-[#EF4444];
+  }
+  
+  .category-finance {
+    @apply bg-[#F59E0B];
+  }
+  
+  .category-automation {
+    @apply bg-[#10B981];
+  }
+  
+  .category-tech-news {
+    @apply bg-[#EF4444];
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-in-out forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.slide-out {
+  animation: slideOut 0.5s ease-in-out forwards;
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}

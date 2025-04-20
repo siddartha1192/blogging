@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#2196F3"/>
+  <rect x="300" y="150" width="200" height="150" fill="#FFFFFF"/>
+  <polygon points="300,150 400,80 500,150" fill="#FFFFFF"/>
+  <rect x="350" y="200" width="40" height="60" fill="#2196F3"/>
+  <rect x="410" y="200" width="40" height="60" fill="#2196F3"/>
+  <text x="400" y="350" font-family="Arial" font-size="36" text-anchor="middle" fill="#FFFFFF">Smart Home Automation</text>
+</svg>

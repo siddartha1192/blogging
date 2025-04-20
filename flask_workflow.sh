@@ -1,5 +1,5 @@
 #!/bin/bash
-# Stop any running Node.js processes
-pkill -f "node.*server/index.ts" || true
+# Stop any running Python processes
+pkill -f "python.*run.py" || true
 # Run the Flask application
-python flask_techblog.py
+python run.py

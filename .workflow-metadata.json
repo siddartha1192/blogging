@@ -1,0 +1,8 @@
+{
+  "workflows": {
+    "Start application": {
+      "commands": ["./run.sh"],
+      "runInTerminal": true
+    }
+  }
+}

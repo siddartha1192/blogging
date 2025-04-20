@@ -144,13 +144,13 @@ def init_db():
                 name="Jane Doe", 
                 email="jane@example.com", 
                 bio="Tech enthusiast and finance expert", 
-                avatar="/static/images/avatars/avatar-1.jpg"
+                avatar="/static/images/avatars/avatar-1.svg"
             )
             author2 = Author(
                 name="John Smith", 
                 email="john@example.com", 
                 bio="AI researcher and smart home consultant", 
-                avatar="/static/images/avatars/avatar-2.jpg"
+                avatar="/static/images/avatars/avatar-2.svg"
             )
             
             db.session.add_all([author1, author2])
@@ -190,7 +190,7 @@ As these technologies continue to evolve, we can expect further integration betw
                     """,
                     read_time=7,
                     featured=True,
-                    featured_image="/static/images/posts/crypto-banking.jpg",
+                    featured_image="/static/images/posts/crypto-banking.svg",
                     category_id=1,  # Finance
                     author_id=1,  # Jane Doe
                 ),
@@ -213,7 +213,7 @@ As we look toward 2025 and beyond, the integration of AI into home automation wi
                     """,
                     read_time=8,
                     featured=True,
-                    featured_image="/static/images/posts/smart-home.jpg",
+                    featured_image="/static/images/posts/smart-home.svg",
                     category_id=2,  # Automation
                     author_id=2,  # John Smith
                 ),
@@ -240,7 +240,7 @@ Battery efficiency continues to be a standout feature of Apple Silicon, and the 
                     """,
                     read_time=10,
                     featured=True,
-                    featured_image="/static/images/posts/apple-chip.jpg",
+                    featured_image="/static/images/posts/apple-chip.svg",
                     category_id=3,  # Tech News
                     author_id=1,  # Jane Doe
                 ),
@@ -265,7 +265,7 @@ These diverse applications illustrate how blockchain technology is evolving beyo
                     """,
                     read_time=6,
                     featured=False,
-                    featured_image="/static/images/posts/blockchain.jpg",
+                    featured_image="/static/images/posts/blockchain.svg",
                     category_id=1,  # Finance
                     author_id=2,  # John Smith
                 ),
@@ -292,7 +292,7 @@ As RPA technology continues to evolve, particularly through integration with art
                     """,
                     read_time=7,
                     featured=False,
-                    featured_image="/static/images/posts/rpa.jpg",
+                    featured_image="/static/images/posts/rpa.svg",
                     category_id=2,  # Automation
                     author_id=1,  # Jane Doe
                 ),
@@ -321,7 +321,7 @@ While fully fault-tolerant, general-purpose quantum computers remain years away,
                     """,
                     read_time=9,
                     featured=False,
-                    featured_image="/static/images/posts/quantum.jpg",
+                    featured_image="/static/images/posts/quantum.svg",
                     category_id=3,  # Tech News
                     author_id=2,  # John Smith
                 )
@@ -350,23 +350,97 @@ def create_placeholder_images():
     avatar_dir = os.path.join(app.static_folder, 'images/avatars')
     posts_dir = os.path.join(app.static_folder, 'images/posts')
     
-    # Create avatar placeholders
-    if not os.path.exists(os.path.join(avatar_dir, 'avatar-1.jpg')):
-        with open(os.path.join(avatar_dir, 'avatar-1.jpg'), 'w') as f:
-            f.write('placeholder')
+    # Create directories if they don't exist
+    os.makedirs(avatar_dir, exist_ok=True)
+    os.makedirs(posts_dir, exist_ok=True)
     
-    if not os.path.exists(os.path.join(avatar_dir, 'avatar-2.jpg')):
-        with open(os.path.join(avatar_dir, 'avatar-2.jpg'), 'w') as f:
-            f.write('placeholder')
+    # Create avatar placeholders
+    avatar1_svg = """<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <circle cx="100" cy="100" r="100" fill="#4CAF50"/>
+  <circle cx="100" cy="80" r="40" fill="#FFFFFF"/>
+  <path d="M100 130 Q 65 130 50 170 Q 75 190 100 190 Q 125 190 150 170 Q 135 130 100 130" fill="#FFFFFF"/>
+</svg>"""
+    
+    avatar2_svg = """<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <circle cx="100" cy="100" r="100" fill="#2196F3"/>
+  <circle cx="100" cy="80" r="40" fill="#FFFFFF"/>
+  <path d="M100 130 Q 65 130 50 170 Q 75 190 100 190 Q 125 190 150 170 Q 135 130 100 130" fill="#FFFFFF"/>
+</svg>"""
+    
+    if not os.path.exists(os.path.join(avatar_dir, 'avatar-1.svg')):
+        with open(os.path.join(avatar_dir, 'avatar-1.svg'), 'w') as f:
+            f.write(avatar1_svg)
+    
+    if not os.path.exists(os.path.join(avatar_dir, 'avatar-2.svg')):
+        with open(os.path.join(avatar_dir, 'avatar-2.svg'), 'w') as f:
+            f.write(avatar2_svg)
     
     # Create post image placeholders
-    post_images = ['crypto-banking.jpg', 'smart-home.jpg', 'apple-chip.jpg', 
-                  'blockchain.jpg', 'rpa.jpg', 'quantum.jpg']
+    crypto_svg = """<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#FF9800"/>
+  <circle cx="400" cy="200" r="100" fill="#FFFFFF"/>
+  <text x="400" y="220" font-family="Arial" font-size="70" font-weight="bold" text-anchor="middle" fill="#FF9800">₿</text>
+  <text x="400" y="350" font-family="Arial" font-size="36" text-anchor="middle" fill="#FFFFFF">Cryptocurrency & Banking</text>
+</svg>"""
     
-    for img in post_images:
-        if not os.path.exists(os.path.join(posts_dir, img)):
-            with open(os.path.join(posts_dir, img), 'w') as f:
-                f.write('placeholder')
+    smarthome_svg = """<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#4CAF50"/>
+  <path d="M400 100 L250 200 L250 350 L550 350 L550 200 Z" fill="#FFFFFF"/>
+  <rect x="370" y="270" width="60" height="80" fill="#4CAF50"/>
+  <circle cx="330" cy="250" r="25" fill="#4CAF50"/>
+  <circle cx="470" cy="250" r="25" fill="#4CAF50"/>
+  <text x="400" y="350" font-family="Arial" font-size="36" text-anchor="middle" fill="#FFFFFF">Smart Home Automation</text>
+</svg>"""
+    
+    apple_svg = """<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#000000"/>
+  <rect x="300" y="100" width="200" height="200" fill="#FFFFFF" rx="20" ry="20"/>
+  <text x="400" y="230" font-family="Arial" font-size="100" text-anchor="middle" fill="#000000">M3</text>
+  <text x="400" y="350" font-family="Arial" font-size="36" text-anchor="middle" fill="#FFFFFF">Apple Silicon</text>
+</svg>"""
+    
+    blockchain_svg = """<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#3F51B5"/>
+  <rect x="150" y="150" width="100" height="100" fill="#FFFFFF" rx="10" ry="10"/>
+  <rect x="350" y="150" width="100" height="100" fill="#FFFFFF" rx="10" ry="10"/>
+  <rect x="550" y="150" width="100" height="100" fill="#FFFFFF" rx="10" ry="10"/>
+  <line x1="250" y1="200" x2="350" y2="200" stroke="#FFFFFF" stroke-width="10"/>
+  <line x1="450" y1="200" x2="550" y2="200" stroke="#FFFFFF" stroke-width="10"/>
+  <text x="400" y="350" font-family="Arial" font-size="36" text-anchor="middle" fill="#FFFFFF">Blockchain Technology</text>
+</svg>"""
+    
+    rpa_svg = """<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#2196F3"/>
+  <rect x="300" y="150" width="200" height="150" fill="#FFFFFF"/>
+  <circle cx="400" cy="125" r="50" fill="#FFFFFF"/>
+  <line x1="350" y1="200" x2="450" y2="200" stroke="#2196F3" stroke-width="10"/>
+  <line x1="350" y1="230" x2="450" y2="230" stroke="#2196F3" stroke-width="10"/>
+  <line x1="350" y1="260" x2="450" y2="260" stroke="#2196F3" stroke-width="10"/>
+  <text x="400" y="350" font-family="Arial" font-size="36" text-anchor="middle" fill="#FFFFFF">Robotic Process Automation</text>
+</svg>"""
+    
+    quantum_svg = """<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#9C27B0"/>
+  <circle cx="400" cy="200" r="100" fill="none" stroke="#FFFFFF" stroke-width="5"/>
+  <circle cx="400" cy="200" r="20" fill="#FFFFFF"/>
+  <ellipse cx="400" cy="200" rx="150" ry="50" fill="none" stroke="#FFFFFF" stroke-width="5" transform="rotate(30 400 200)"/>
+  <ellipse cx="400" cy="200" rx="150" ry="50" fill="none" stroke="#FFFFFF" stroke-width="5" transform="rotate(150 400 200)"/>
+  <text x="400" y="350" font-family="Arial" font-size="36" text-anchor="middle" fill="#FFFFFF">Quantum Computing</text>
+</svg>"""
+    
+    post_images = {
+        'crypto-banking.svg': crypto_svg,
+        'smart-home.svg': smarthome_svg,
+        'apple-chip.svg': apple_svg,
+        'blockchain.svg': blockchain_svg,
+        'rpa.svg': rpa_svg,
+        'quantum.svg': quantum_svg
+    }
+    
+    for img_name, svg_content in post_images.items():
+        if not os.path.exists(os.path.join(posts_dir, img_name)):
+            with open(os.path.join(posts_dir, img_name), 'w') as f:
+                f.write(svg_content)
 
 # Initialize the database and create placeholder images
 init_db()
@@ -374,4 +448,4 @@ create_placeholder_images()
 
 # Run the application
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5001)), debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=True)

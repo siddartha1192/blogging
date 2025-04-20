@@ -1,0 +1,256 @@
+/* Main Styling */
+:root {
+    --finance-color: #4CAF50;
+    --automation-color: #2196F3;
+    --tech-news-color: #9C27B0;
+    --primary-color: #2196F3;
+    --secondary-color: #6c757d;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f7f9;
+}
+
+/* Category Colors */
+.category-finance {
+    background-color: var(--finance-color);
+}
+
+.category-automation {
+    background-color: var(--automation-color);
+}
+
+.category-tech-news {
+    background-color: var(--tech-news-color);
+}
+
+.badge-finance {
+    background-color: var(--finance-color);
+    color: white;
+}
+
+.badge-automation {
+    background-color: var(--automation-color);
+    color: white;
+}
+
+.badge-tech-news {
+    background-color: var(--tech-news-color);
+    color: white;
+}
+
+/* Featured Slider */
+.featured-slider {
+    margin-bottom: 3rem;
+}
+
+.carousel-inner {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.featured-content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.carousel-item {
+    height: 500px;
+}
+
+.carousel-image {
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Category Cards */
+.category-card {
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.category-card-header {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.category-card-body {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+/* Post Cards */
+.post-card {
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.post-image {
+    height: 200px;
+    object-fit: cover;
+}
+
+.post-content {
+    padding: 1.5rem;
+}
+
+.post-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+.post-title {
+    margin-top: 0.75rem;
+    font-weight: 600;
+}
+
+.post-excerpt {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+}
+
+.author-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+/* Newsletter Section */
+.newsletter {
+    background-color: var(--primary-color);
+    padding: 3rem;
+    border-radius: 10px;
+    color: white;
+    margin-bottom: 3rem;
+}
+
+.newsletter-form {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Trending Topics */
+.trending-topics {
+    margin-bottom: 3rem;
+}
+
+.topic-tag {
+    display: inline-block;
+    background-color: #f1f1f1;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.topic-tag:hover {
+    background-color: #e0e0e0;
+}
+
+/* Single Post Page */
+.post-header {
+    margin-bottom: 2rem;
+}
+
+.post-featured-image {
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+}
+
+.post-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+/* Category Page */
+.category-header {
+    padding: 3rem;
+    color: white;
+    border-radius: 10px;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .carousel-item {
+        height: 400px;
+    }
+    
+    .featured-content {
+        padding: 1.5rem;
+    }
+    
+    .newsletter {
+        padding: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .carousel-item {
+        height: 350px;
+    }
+    
+    .post-image {
+        height: 180px;
+    }
+}

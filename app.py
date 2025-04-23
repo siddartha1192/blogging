@@ -270,6 +270,173 @@ These diverse applications illustrate how blockchain technology is evolving beyo
                     author_id=2,  # John Smith
                 ),
                 Post(
+                    title="Siddartha testing Blog",
+                    slug="test-blog",
+                    excerpt="My First Blog on Flask App",
+                    content="""
+Siddartha testing blog. 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bash Script Code Showcase</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.0/themes/prism.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.0/components/prism-bash.min.js"></script>
+    <style>
+
+        .code-box {
+            position: relative;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: auto;
+        }
+
+        .copy-button {
+            background-color: #0074d9;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .copy-button.copied {
+            background-color: #4CAF50;
+            transition: background-color 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="code-box">
+        <button class="copy-button" onclick="copyToClipboard(0)">Copy Code</button>
+        <pre><code class="language-bash">
+from fyers_apiv3.FyersWebsocket import data_ws
+import time
+import pandas as pd
+from fyers_apiv3 import fyersModel
+import os
+fyers = fyersModel.FyersModel(token=’token’,is_async=False,client_id='VXXXXXXXI-100',log_path="")
+
+
+def onmessage(message):
+    print("Response:", message['ltp'])
+    ReferencePrice = int(get_ltp(client_id,access_token,'NSE:NIFTYBANK-INDEX'))
+    ltp = message['ltp']
+    symbol='NSE:NIFTYBANK-INDEX'
+    allPositions = fyers.positions()['netPositions']
+    current_position_side = get_openposition_side(allPositions)
+    buy_sell_status = check_price_level(client_id,access_token,symbol,ReferencePrice)
+
+    if buy_sell_status == 'buy' and current_position_side != 'CE':
+        if ([obj for obj in allPositions if obj["netQty"] > 0]):
+            close_all_positions(client_id, access_token)
+        else:
+            print('')
+        buy_symbol = current_BN_ATM_CE()
+        place_market_order(client_id,access_token,buy_symbol,1,15)
+
+    elif buy_sell_status == 'sell' and current_position_side != 'PE':
+        if ([obj for obj in allPositions if obj["netQty"] > 0]):
+            close_all_positions(client_id, access_token)
+        else:
+            print('')
+        sell_symbol = current_BN_ATM_PE()
+        place_market_order(client_id,access_token,sell_symbol,1,15)
+
+    else:
+        print("Waiting for correct price.")
+    check_total_PNL()
+    time.sleep(30)
+
+
+def onerror(message):
+    print("Error:", message)
+
+
+def onclose(message):
+    print("Connection closed:", message)
+
+
+def onopen():
+    data_type = "SymbolUpdate"
+    symbols = ['NSE:NIFTYBANK-INDEX']
+    fyers1.subscribe(symbols=symbols, data_type=data_type)
+    fyers1.keep_running()
+
+access_token_data = ‘XXXXXXX-100:' + access_token
+# Create a FyersDataSocket instance with the provided parameters
+fyers1 = data_ws.FyersDataSocket(
+    access_token=access_token_data,
+    log_path="",
+    litemode=True,
+    write_to_file=False,
+    reconnect=True,
+    on_connect=onopen,
+    on_close=onclose,
+    on_error=onerror,
+    on_message=onmessage
+)
+# Establish a connection to the Fyers WebSocket
+fyers1.connect()
+      </code></pre>
+    </div>
+
+    <script>
+        Prism.highlightAll();
+
+        function copyToClipboard(index) {
+            const codeBlocks = document.querySelectorAll('.code-box code');
+            const selectedCode = codeBlocks[index].textContent;
+            const button = document.querySelectorAll('.copy-button')[index];
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = selectedCode;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            // Add the 'copied' class to change button color temporarily
+            button.classList.add('copied');
+            setTimeout(function() {
+                button.classList.remove('copied');
+            }, 500);
+        }
+    </script>
+</body>
+</html>
+
+
+Robotic Process Automation (RPA) is revolutionizing how businesses handle routine, rule-based tasks that once required significant human effort. By deploying software robots or "bots" that can mimic human interactions with digital systems, organizations are achieving new levels of efficiency, accuracy, and scalability in their operations.
+
+Unlike physical robots on assembly lines, RPA bots are software programs that work with existing computer systems. They can log into applications, enter data, complete forms, extract information from documents, and perform calculations—all according to predefined rules. This makes them perfect for handling repetitive, high-volume tasks that follow consistent patterns.
+
+Finance departments have been early adopters of RPA, using bots for accounts payable processing, reconciliations, and financial reporting. A bot can extract invoice data, verify it against purchase orders and receipts, update accounting systems, and even flag exceptions for human review—all without manual intervention for standard cases.
+
+Human resources is another area seeing significant RPA implementation. Bots can streamline employee onboarding by automatically creating accounts across multiple systems, processing paperwork, and ensuring compliance requirements are met. They can also assist with payroll processing, benefits administration, and routine employee queries.
+
+Customer service operations benefit from RPA through faster processing of standard requests. Bots can retrieve customer information across multiple systems, update records, process simple requests, and route complex issues to the appropriate human agents with all relevant information already gathered.
+
+While RPA offers clear advantages in efficiency and accuracy, its impact on employment remains a complex issue. Some routine positions may be eliminated as tasks are automated, but new roles are also emerging to design, implement, and oversee RPA systems. Many organizations are retraining employees to handle more complex, judgment-intensive work while delegating routine tasks to bots.
+
+The most successful RPA implementations tend to focus on augmenting human capabilities rather than replacing workers entirely. By handling repetitive, time-consuming tasks, bots free up employees to focus on activities that require creativity, emotional intelligence, and complex decision-making—areas where humans still maintain a significant advantage over automation.
+
+As RPA technology continues to evolve, particularly through integration with artificial intelligence, its capabilities will extend beyond simple rule-based tasks to more complex processes requiring judgment and adaptation. This progression will likely accelerate the transformation of work across many industries in the coming years.
+                    """,
+                    read_time=7,
+                    featured=False,
+                    featured_image="/static/images/posts/rpa.svg",
+                    category_id=2,  # Automation
+                    author_id=1,  # Jane Doe
+                ),                
+                Post(
                     title="Robotic Process Automation in the Workplace",
                     slug="robotic-process-automation-workplace",
                     excerpt="How RPA is transforming office work and what it means for the future of employment.",
@@ -337,6 +504,7 @@ While fully fault-tolerant, general-purpose quantum computers remain years away,
             posts[3].topics.extend([topics[1], topics[6]])  # Blockchain, Google
             posts[4].topics.extend([topics[3], topics[4]])  # AI, Machine Learning
             posts[5].topics.extend([topics[3], topics[7]])  # AI, Microsoft
+            posts[6].topics.extend([topics[2], topics[7]])  # AI, Microsoft
             
             db.session.commit()
 

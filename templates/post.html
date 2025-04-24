@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ post.title }} - TechBlog{% endblock %}
+{% block title %}{{ post.title }} - techbobbles{% endblock %}
 
 {% block content %}
 <!-- Post Header -->
@@ -88,23 +88,36 @@
 <style>
 .prose {
     line-height: 1.8;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    padding: 0%;
 }
 .prose p {
     margin-bottom: 1.5rem;
+    padding: 0%;
 }
 .prose h2 {
     margin-top: 2rem;
     margin-bottom: 1rem;
-    font-weight: 600;
+    font-weight: 600;    
+}
+.mb-5 {
+    margin-bottom: auto !important;
 }
 .prose h3 {
     margin-top: 1.5rem;
     margin-bottom: 0.75rem;
     font-weight: 600;
+    padding: 0%;
 }
 .author-bio {
     background-color: #f8f9fa;
+    padding: 0%;
+}
+.img-fluid {
+    max-width: 60%;
+    display: block;
+    margin: 0 auto; /* shorthand for top/bottom 0 and center horizontally */
+    padding: 0;     /* just in case any padding is applied */
 }
 </style>
 {% endblock %}

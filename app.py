@@ -84,7 +84,9 @@ def home():
 
 @app.route('/ads.txt')
 def serve_ads_txt():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'ads.txt')
+    # Use 'with' to automatically close the file after reading
+    with open('static/ads.txt', 'r') as adFile:
+        return adFile.read()
 
 @app.route('/category/<slug>')
 def category(slug):

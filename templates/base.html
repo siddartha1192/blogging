@@ -58,6 +58,11 @@
                         <li><a href="{{ url_for('category', slug=cat.slug) }}" class="text-light">{{ cat.name }}</a></li>
                         {% endfor %}
                     </ul>
+                    <li class="mt-2">
+                        <a href="{{ url_for('about') }}" class="text-light">
+                            <i class="bi bi-info-circle"></i> About
+                        </a>
+                    </li>
                 </div>
                 <div class="col-md-4">
                     <h5>Connect With Us</h5>

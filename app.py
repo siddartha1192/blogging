@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import markdown
@@ -82,6 +82,10 @@ def home():
                            latest_posts=latest_posts, 
                            trending_topics=trending_topics)
 
+@app.route('/ads.txt')
+def serve_ads_txt():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'ads.txt')
+
 @app.route('/category/<slug>')
 def category(slug):
     category = Category.query.filter_by(slug=slug).first_or_404()
@@ -108,6 +112,10 @@ def topic(slug):
     return render_template('topic.html', 
                            topic=topic, 
                            posts=posts)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 # Helper function to initialize the database with sample data
 def init_db():

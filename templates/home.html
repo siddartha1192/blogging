@@ -138,13 +138,14 @@
                 <div class="newsletter-signup text-center p-4 p-md-5">
                     <h2 class="mb-3">Subscribe to Our Newsletter</h2>
                     <p class="lead mb-4">Get the latest tech news and updates delivered straight to your inbox.</p>
-                    <form class="newsletter-form">
+                    <form id="newsletter-form" class="newsletter-form" data-url="{{ url_for('subscribe') }}">
                         <div class="input-group mb-3">
-                            <input type="email" class="form-control" placeholder="Enter your email" aria-label="Email">
+                            <input type="email" id="subscriber-email" class="form-control" placeholder="Enter your email" required>
                             <button class="btn btn-primary" type="submit">Subscribe</button>
                         </div>
                         <div class="form-text text-muted">We'll never share your email with anyone else.</div>
-                    </form>
+                        <div id="subscription-response" class="mt-2"></div>
+                    </form>                                                       
                 </div>
             </div>
         </div>

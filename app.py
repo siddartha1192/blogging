@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import markdown
@@ -63,6 +63,11 @@ class Topic(db.Model):
     name = db.Column(db.String(50), nullable=False)
     slug = db.Column(db.String(50), unique=True, nullable=False)
 
+class Subscriber(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    subscribed_on = db.Column(db.DateTime, default=datetime.utcnow)
+
 # Association table for Post and Topic many-to-many relationship
 post_topics = db.Table('post_topics',
     db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True),
@@ -81,6 +86,33 @@ def home():
                            categories=categories, 
                            latest_posts=latest_posts, 
                            trending_topics=trending_topics)
+
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    data = request.get_json()
+    email = data.get('email')
+    
+    if not email:
+        # Return JSON error if it's an AJAX call
+        if request.is_json:
+            return jsonify({'status': 'danger', 'message': 'Please provide a valid email.'}), 400
+        flash('Please provide a valid email.', 'danger')
+        return redirect(request.referrer or url_for('home'))
+
+    existing = Subscriber.query.filter_by(email=email).first()
+    if existing:
+        if request.is_json:
+            return jsonify({'status': 'warning', 'message': 'You are already subscribed!'}), 200
+        flash('You are already subscribed!', 'warning')
+    else:
+        new_sub = Subscriber(email=email)
+        db.session.add(new_sub)
+        db.session.commit()
+        if request.is_json:
+            return jsonify({'status': 'success', 'message': 'Subscription successful!'}), 200
+        flash('Subscription successful!', 'success')
+
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/ads.txt')
 def serve_ads_txt():
@@ -106,6 +138,16 @@ def post(slug):
     return render_template('post.html', 
                            post=post, 
                            trending_topics=trending_topics)
+
+
+@app.route('/search')
+def search():
+    query = request.args.get('q', '')
+    if not query:
+        return redirect(url_for('home'))
+    post = Post.query.filter(Post.title.contains(query) | Post.content.contains(query)).all()
+    return render_template('search.html', topic=query, posts=post)
+
 
 @app.route('/topic/<slug>')
 def topic(slug):

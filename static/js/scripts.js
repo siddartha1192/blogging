@@ -20,31 +20,31 @@ function showAlert(message, type) {
     }, 5000);
 }
 
-// Newsletter form submission
-document.addEventListener('DOMContentLoaded', function() {
-    const newsletterForm = document.querySelector('.newsletter-form');
-    if (newsletterForm) {
-        newsletterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const emailInput = this.querySelector('input[type="email"]');
-            const email = emailInput.value.trim();
-            
-            if (email) {
-                // In a real application, this would send the email to a server
-                showAlert('Thank you for subscribing to our newsletter!', 'success');
-                emailInput.value = '';
-            } else {
-                showAlert('Please enter a valid email address.', 'danger');
-            }
-        });
-    }
-    
-    // Featured carousel initialization with 5 second interval
-    const featuredCarousel = document.getElementById('featuredCarousel');
-    if (featuredCarousel) {
-        const carousel = new bootstrap.Carousel(featuredCarousel, {
-            interval: 5000,
-            ride: 'carousel'
-        });
-    }
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("newsletter-form");
+    const emailInput = document.getElementById("subscriber-email");
+    const responseEl = document.getElementById("subscription-response");
+    const postUrl = form.getAttribute("data-url");
+
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+
+        try {
+            const response = await fetch('http://162.243.166.189/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email })});
+
+            const result = await response.json();
+            responseEl.innerHTML = `<div class="alert alert-${result.status}">${result.message}</div>`;
+        } catch (err) {
+            responseEl.innerHTML = `<div class="alert alert-danger">An error occurred. Please try again.</div>`;
+        }
+    });
 });
+

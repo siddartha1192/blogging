@@ -31,8 +31,8 @@
                                     <a href="{{ url_for('post', slug=post.slug) }}" class="btn btn-primary">Read Article</a>
                                 </div>
                             </div>
-                            <div class="col-md-6 d-none d-md-block">
-                                <img src="{{ post.featured_image }}" class="featured-post-image" alt="{{ post.title }}">
+                            <div class="col-md-6 d-none d-md-block position-relative">
+                                <img src="{{ post.featured_image }}" class="featured-post-image position-absolute top-0 start-0 w-100 h-100" alt="{{ post.title }}" style="object-fit: contain; object-position: center;">
                             </div>
                         </div>
                     </div>

@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const email = emailInput.value.trim();
 
         try {
-            const response = await fetch('http://162.243.166.189/subscribe', {
+            const response = await fetch("{{ url_for('subscribe') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

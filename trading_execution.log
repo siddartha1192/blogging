@@ -1,0 +1,79 @@
+2025-07-14 02:23:40 - Access token generated successfully
+2025-07-14 02:24:39 - Access token generated successfully
+2025-07-14 02:31:00 - Trading script started with PID: 10592
+2025-07-14 02:31:42 - Report generated: report_20250714_023142.html
+2025-07-14 02:55:32 - Report generated: report_20250714_025532.html
+2025-07-14 02:59:14 - Trading script started with PID: 7576
+2025-07-14 03:41:08 - Trading script started with PID: 5692
+2025-07-14 03:45:34 - Trading script started with PID: 11968
+2025-07-14 04:45:05 - Error starting script: [WinError 123] The filename, directory name, or volume label syntax is incorrect
+2025-07-14 04:45:17 - Error starting script: [WinError 123] The filename, directory name, or volume label syntax is incorrect
+2025-07-14 04:46:39 - Trading script started with PID: 11548
+2025-07-14 04:48:45 - Trading script stopped successfully
+2025-07-14 04:49:48 - Trading script started with PID: 9244
+2025-07-14 04:53:36 - Trading script started with PID: 9448
+2025-07-14 11:30:53 - Access token generated successfully
+2025-07-14 11:31:07 - Trading script started with PID: 616
+2025-07-14 11:32:31 - Report generated: report_20250714_113230.html
+2025-07-14 11:38:37 - Report generated: report_20250714_113837.html
+2025-07-14 11:39:08 - Report generated: report_20250714_113908.html
+2025-07-14 11:40:06 - Trading script stopped successfully
+2025-07-14 11:42:24 - Trading script started with PID: 8720
+2025-07-14 11:43:24 - Trading script started with PID: 10812
+2025-07-14 11:45:51 - Trading script started with PID: 328
+2025-07-14 11:52:04 - Trading script stopped successfully
+2025-07-15 10:41:53 - Access token generated successfully
+2025-07-15 10:42:47 - Error starting script: [WinError 267] The directory name is invalid
+2025-07-15 10:42:59 - Error starting script: [WinError 267] The directory name is invalid
+2025-07-15 10:46:32 - Error starting script: [WinError 267] The directory name is invalid
+2025-07-15 10:47:10 - Error starting script: [WinError 267] The directory name is invalid
+2025-07-15 10:48:53 - Trading script started with PID: 9276
+2025-07-15 10:53:51 - Trading script started with PID: 3764
+2025-07-15 10:57:37 - Trading script started with PID: 12536
+2025-07-15 11:03:36 - Trading script started with PID: 9752
+2025-07-19 19:01:51 - Access token generated successfully
+2025-07-19 19:02:19 - Trading script started with PID: 604
+2025-07-19 19:06:05 - Trading script started with PID: 5560
+2025-07-19 19:37:55 - Trading script started with PID: 7296
+2025-07-19 19:58:13 - Report generated: report_20250719_195813.html
+2025-07-21 10:40:20 - Access token generated successfully
+2025-07-21 10:40:34 - Trading script started with PID: 10436
+2025-07-21 10:47:24 - Trading script started with PID: 13588
+2025-07-21 10:47:52 - Access token generated successfully
+2025-07-21 10:47:59 - Trading script started with PID: 6260
+2025-07-21 10:49:03 - Trading script started with PID: 13436
+2025-07-21 10:55:54 - Trading script started with PID: 5396
+2025-07-21 10:56:27 - Force killed process 5396
+2025-07-21 10:56:27 - Force killed process 8996
+2025-07-21 10:56:27 - Force stopped 2 processes: [5396, 8996]
+2025-07-21 11:00:48 - Trading script started with PID: 6848
+2025-07-22 10:53:34 - Access token generated successfully
+2025-07-22 10:53:45 - Trading script started with PID: 15128
+2025-07-22 10:54:13 - Trading script started with PID: 8316
+2025-07-22 10:54:32 - Trading script started with PID: 14388
+2025-07-22 11:03:39 - Access token generated successfully
+2025-07-22 11:03:51 - Trading script started with PID: 14688
+2025-07-22 11:10:29 - Stop signal file created
+2025-07-22 11:10:29 - SIGTERM sent to process 14688
+2025-07-22 11:10:29 - Process terminated gracefully
+2025-07-22 11:10:29 - Killed UpdatedLatest.py process with PID 2132
+2025-07-22 11:10:31 - Trading script stop attempted with multiple methods
+2025-07-22 11:10:31 - Error stopping script: name 'time' is not defined
+2025-07-22 11:14:33 - Trading script started with PID: 10708
+2025-07-22 11:15:44 - Stop signal file created
+2025-07-22 11:15:44 - SIGTERM sent to process 10708
+2025-07-22 11:15:44 - Process terminated gracefully
+2025-07-22 11:15:45 - Killed UpdatedLatest.py process with PID 2872
+2025-07-22 11:15:45 - Killed UpdatedLatest.py process with PID 3044
+2025-07-22 11:15:46 - Trading script stop attempted with multiple methods
+2025-07-22 11:16:25 - Trading script started with PID: 14348
+2025-07-22 11:20:19 - Stop signal file created
+2025-07-22 11:20:24 - No UpdatedLatest.py processes found running
+2025-07-22 11:35:11 - Trading script started with PID: 15092
+2025-07-22 11:59:28 - Stop signal file created
+2025-07-22 23:06:43 - Report generated: report_20250722_230642.html
+2025-07-22 23:24:38 - Trading script started with PID: 4056
+2025-07-22 23:25:32 - Trading script started with PID: 724
+2025-07-22 23:28:57 - Trading script started with PID: 13316
+2025-07-22 23:29:16 - Trading script started with PID: 2004
+2025-07-22 23:48:33 - Trading script started with PID: 14936

@@ -1,0 +1,34 @@
+2025-07-15 10:44:19,957 - Starting Nifty Option Selling Strategy
+2025-07-15 10:44:28,061 - Spot Price: 25160.7, Supertrend: Red, Below EMA
+2025-07-15 10:45:30,847 - Spot Price: 25165.35, Supertrend: Red, Below EMA
+2025-07-15 10:45:56,229 - Starting Nifty Option Selling Strategy
+2025-07-15 11:03:38,506 - Starting Nifty Option Selling Strategy
+2025-07-15 11:03:41,866 - Spot Price: 25211.95, Supertrend: Red, Above EMA
+2025-07-15 11:04:44,707 - Spot Price: 25215.4, Supertrend: Red, Above EMA
+2025-07-15 11:05:47,536 - Spot Price: 25227.6, Supertrend: Red, Above EMA
+2025-07-15 11:06:50,206 - Spot Price: 25226.35, Supertrend: Red, Above EMA
+2025-07-15 11:07:53,481 - Spot Price: 25228.2, Supertrend: Red, Above EMA
+2025-07-15 11:08:56,186 - Spot Price: 25223.5, Supertrend: Red, Above EMA
+2025-07-15 11:09:58,776 - Spot Price: 25232.25, Supertrend: Red, Above EMA
+2025-07-15 11:11:01,776 - Spot Price: 25222.3, Supertrend: Red, Above EMA
+2025-07-15 11:12:04,406 - Spot Price: 25240.25, Supertrend: Green, Above EMA
+2025-07-15 11:12:04,406 - Exit signal detected: Supertrend Signal Change
+2025-07-15 11:12:05,256 - PAPER TRADE: Exiting position for NSE:NIFTY2572425300CE @ 162.95
+2025-07-15 11:12:06,121 - PAPER TRADE: Exiting position for NSE:NIFTY2572425550CE @ 70.65
+2025-07-15 11:12:06,141 - Exit: Buy Back Call NSE:NIFTY2572425300CE @ 162.95, Sell Call NSE:NIFTY2572425550CE @ 70.65
+2025-07-15 11:13:09,144 - Spot Price: 25232.75, Supertrend: Red, Above EMA
+2025-07-15 11:14:11,681 - Spot Price: 25222.9, Supertrend: Red, Above EMA
+2025-07-15 11:15:14,422 - Spot Price: 25223.75, Supertrend: Red, Above EMA
+2025-07-15 11:16:17,066 - Spot Price: 25220.0, Supertrend: Red, Above EMA
+2025-07-15 11:17:19,771 - Spot Price: 25217.65, Supertrend: Red, Above EMA
+2025-07-15 11:18:22,436 - Spot Price: 25215.7, Supertrend: Red, Above EMA
+2025-07-15 11:19:25,330 - Spot Price: 25209.7, Supertrend: Red, Above EMA
+2025-07-15 11:20:28,086 - Spot Price: 25208.05, Supertrend: Red, Above EMA
+2025-07-15 11:21:30,800 - Spot Price: 25218.65, Supertrend: Red, Above EMA
+2025-07-15 11:22:33,575 - Spot Price: 25215.65, Supertrend: Red, Above EMA
+2025-07-15 11:23:36,485 - Spot Price: 25211.75, Supertrend: Red, Above EMA
+2025-07-15 11:24:39,155 - Spot Price: 25215.8, Supertrend: Red, Above EMA
+2025-07-15 11:25:41,835 - Spot Price: 25217.15, Supertrend: Red, Above EMA
+2025-07-15 11:26:44,465 - Spot Price: 25216.8, Supertrend: Red, Above EMA
+2025-07-15 11:27:47,385 - Spot Price: 25213.5, Supertrend: Red, Above EMA
+2025-07-15 11:28:50,576 - Spot Price: 25212.25, Supertrend: Red, Above EMA

@@ -1,0 +1,20 @@
+2025-07-21 10:40:41,192 - Starting Nifty Option Selling Strategy
+2025-07-21 10:40:51,138 - Spot Price: 25054.9, Supertrend: Red, Below EMA
+2025-07-21 10:40:51,138 - Sell signal detected
+2025-07-21 10:40:51,145 - Error in short entry: No module named 'scipy'
+2025-07-21 10:41:55,201 - Spot Price: 25059.9, Supertrend: Red, Below EMA
+2025-07-21 10:41:55,201 - Sell signal detected
+2025-07-21 10:41:55,204 - Error in short entry: No module named 'scipy'
+2025-07-21 10:41:55,461 - Received termination signal. Stopping trading...
+2025-07-21 10:55:57,368 - Starting Nifty Option Selling Strategy
+2025-07-21 10:56:03,142 - Spot Price: 25050.1, Supertrend: Red, Below EMA
+2025-07-21 10:56:03,142 - Sell signal detected
+2025-07-21 10:56:03,149 - Error in short entry: No module named 'scipy'
+2025-07-21 11:00:51,544 - Starting Nifty Option Selling Strategy
+2025-07-21 11:00:56,149 - Spot Price: 25062.4, Supertrend: Red, Below EMA
+2025-07-21 11:00:56,149 - Sell signal detected
+2025-07-21 11:00:56,149 - Error in short entry: No module named 'scipy'
+2025-07-21 11:02:04,926 - Spot Price: 25060.4, Supertrend: Red, Below EMA
+2025-07-21 11:02:04,927 - Sell signal detected
+2025-07-21 11:02:04,931 - Error in short entry: No module named 'scipy'
+2025-07-21 11:02:05,172 - Received termination signal. Stopping trading...

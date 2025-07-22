@@ -16,7 +16,6 @@ import pendulum as dt
 import os
 import signal
 import psutil
-import time
 
 
 
@@ -752,64 +751,6 @@ def save_access_token():
             'message': f'Error saving token: {str(e)}'
         }), 500
 
-
-
-
-@app.route('/SiddarthaDas_trading/create_stop_signal', methods=['POST'])
-def create_stop_signal():
-    """Create stop signal file for graceful shutdown"""
-    try:
-        stop_file = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\trading_stop_signal.txt'
-        
-        with open(stop_file, 'w') as f:
-            f.write('STOP_REQUESTED')
-        
-        log_trading_event("Stop signal file created")
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'Stop signal file created successfully'
-        })
-        
-    except Exception as e:
-        log_trading_event(f"Error creating stop signal: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': f'Error creating stop signal: {str(e)}'
-        }), 500
-
-@app.route('/SiddarthaDas_trading/api/processes')
-def get_running_processes():
-    """Get all running UpdatedLatest.py processes"""
-    try:
-        running_processes = []
-        
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            try:
-                cmdline = proc.info['cmdline']
-                if cmdline and any('UpdatedLatest.py' in arg for arg in cmdline):
-                    running_processes.append({
-                        'pid': proc.info['pid'],
-                        'name': proc.info['name'],
-                        'cmdline': ' '.join(cmdline) if cmdline else 'N/A'
-                    })
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                continue
-        
-        return jsonify({
-            'status': 'success',
-            'processes': running_processes,
-            'count': len(running_processes)
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': f'Error checking processes: {str(e)}',
-            'processes': []
-        }), 500
-
-
 # STEP 2: Route to Start Trading Script
 @app.route('/SiddarthaDas_trading/start_script', methods=['POST'])
 def start_trading_script():
@@ -911,7 +852,7 @@ def trading_dashboard():
 # STEP 4: Route to Stop Trading Script
 @app.route('/SiddarthaDas_trading/stop_script', methods=['POST'])
 def stop_trading_script():
-    """Stop the trading script with multiple methods"""
+    """Stop the trading script"""
     try:
         state = read_trading_state()
         
@@ -921,92 +862,51 @@ def stop_trading_script():
                 'message': 'No trading script is currently running'
             })
         
-        process_id = state['process_id']
-        
-        # Method 1: Create stop signal file
-        stop_file = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\trading_stop_signal.txt'
+        # Try to terminate the process
         try:
-            with open(stop_file, 'w') as f:
-                f.write('STOP')
-            log_trading_event("Stop signal file created")
-        except Exception as e:
-            log_trading_event(f"Failed to create stop file: {e}")
-        
-        # Method 2: Try graceful termination
-        try:
-            process = psutil.Process(process_id)
-            if process.is_running():
-                # Send SIGTERM first (graceful shutdown)
-                process.terminate()
-                log_trading_event(f"SIGTERM sent to process {process_id}")
-                
-                # Wait up to 15 seconds for graceful shutdown
-                try:
-                    process.wait(timeout=15)
-                    log_trading_event("Process terminated gracefully")
-                except psutil.TimeoutExpired:
-                    log_trading_event("Graceful shutdown timeout, forcing kill")
-                    # Force kill if timeout
-                    process.kill()
-                    try:
-                        process.wait(timeout=5)
-                        log_trading_event("Process force killed")
-                    except psutil.TimeoutExpired:
-                        log_trading_event("Process still running after force kill")
-                
-            else:
-                log_trading_event("Process was not running")
-                
-        except psutil.NoSuchProcess:
-            log_trading_event("Process no longer exists")
-        except Exception as e:
-            log_trading_event(f"Error during process termination: {e}")
-        
-        # Method 3: Try to kill by name if PID method fails
-        try:
-            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-                try:
-                    cmdline = proc.info['cmdline']
-                    if cmdline and any('UpdatedLatest.py' in arg for arg in cmdline):
-                        proc.kill()
-                        log_trading_event(f"Killed UpdatedLatest.py process with PID {proc.info['pid']}")
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    continue
-        except Exception as e:
-            log_trading_event(f"Error killing by name: {e}")
-        
-        # Method 4: Update state regardless
-        state['trading_active'] = 'false'
-        state['process_id'] = None
-        state['last_stopped'] = datetime.now().isoformat()
-        state['script_status'] = 'stopped'
-        write_trading_state(state)
-        
-        log_trading_event("Trading script stop attempted with multiple methods")
-        
-        # Wait a moment and check if any UpdatedLatest.py processes are still running
-        time.sleep(2)
-        still_running = []
-        try:
-            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-                try:
-                    cmdline = proc.info['cmdline']
-                    if cmdline and any('UpdatedLatest.py' in arg for arg in cmdline):
-                        still_running.append(proc.info['pid'])
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    continue
-        except:
-            pass
-        
-        if still_running:
-            return jsonify({
-                'status': 'warning',
-                'message': f'Stop signal sent, but processes may still be running: {still_running}. Check again in a few moments.'
-            })
-        else:
+            process = psutil.Process(state['process_id'])
+            process.terminate()
+            
+            # Wait for process to terminate
+            process.wait(timeout=10)
+            
+            # Update state
+            state['trading_active'] = 'false'
+            state['process_id'] = None
+            state['last_stopped'] = datetime.now().isoformat()
+            state['script_status'] = 'stopped'
+            write_trading_state(state)
+            
+            log_trading_event("Trading script stopped successfully")
+            
             return jsonify({
                 'status': 'success',
                 'message': 'Trading script stopped successfully'
+            })
+            
+        except psutil.NoSuchProcess:
+            # Process doesn't exist, update state
+            state['trading_active'] = 'false'
+            state['process_id'] = None
+            state['script_status'] = 'stopped'
+            write_trading_state(state)
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'Process was not running, state updated'
+            })
+            
+        except psutil.TimeoutExpired:
+            # Force kill if timeout
+            process.kill()
+            state['trading_active'] = 'false'
+            state['process_id'] = None
+            state['script_status'] = 'stopped'
+            write_trading_state(state)
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'Trading script force stopped'
             })
             
     except Exception as e:
@@ -1015,59 +915,8 @@ def stop_trading_script():
             'status': 'error',
             'message': f'Error stopping trading script: {str(e)}'
         }), 500
-    
 
-@app.route('/SiddarthaDas_trading/force_stop', methods=['POST'])
-def force_stop_all():
-    """Force stop all UpdatedLatest.py processes"""
-    try:
-        killed_processes = []
-        
-        # Create stop signal file
-        stop_file = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\trading_stop_signal.txt'
-        with open(stop_file, 'w') as f:
-            f.write('FORCE_STOP')
-        
-        # Kill all processes running UpdatedLatest.py
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            try:
-                cmdline = proc.info['cmdline']
-                if cmdline and any('UpdatedLatest.py' in arg for arg in cmdline):
-                    proc.kill()
-                    killed_processes.append(proc.info['pid'])
-                    log_trading_event(f"Force killed process {proc.info['pid']}")
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                continue
-        
-        # Update state
-        state = read_trading_state()
-        state['trading_active'] = 'false'
-        state['process_id'] = None
-        state['last_stopped'] = datetime.now().isoformat()
-        state['script_status'] = 'force_stopped'
-        write_trading_state(state)
-        
-        if killed_processes:
-            message = f'Force stopped {len(killed_processes)} processes: {killed_processes}'
-        else:
-            message = 'No UpdatedLatest.py processes found running'
-        
-        log_trading_event(message)
-        
-        return jsonify({
-            'status': 'success',
-            'message': message
-        })
-        
-    except Exception as e:
-        log_trading_event(f"Error in force stop: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': f'Error in force stop: {str(e)}'
-        }), 500
-
-
-
+# STEP 5: Route to Generate and Show Reports
 @app.route('/SiddarthaDas_trading/generate_report', methods=['POST'])
 def generate_trading_report():
     """Generate trading report from CSV"""
@@ -1144,39 +993,27 @@ def view_trading_report(filename):
 # API Routes for AJAX calls
 @app.route('/SiddarthaDas_trading/api/status')
 def get_trading_status():
-    """Get current trading status via API with improved process checking"""
+    """Get current trading status via API"""
     state = read_trading_state()
     
-    # Check if any UpdatedLatest.py processes are running
-    running_processes = []
-    try:
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            try:
-                cmdline = proc.info['cmdline']
-                if cmdline and any('UpdatedLatest.py' in arg for arg in cmdline):
-                    running_processes.append(proc.info['pid'])
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                continue
-    except:
-        pass
-    
-    # Update state based on actual running processes
-    if running_processes:
-        if len(running_processes) == 1:
-            state['process_id'] = running_processes[0]
-        state['trading_active'] = True
-        state['script_status'] = 'running'
-        state['process_running'] = True
-        state['actual_running_pids'] = running_processes
+    # Check if process is actually running
+    if state.get('process_id'):
+        try:
+            process = psutil.Process(state['process_id'])
+            state['process_running'] = process.is_running()
+        except:
+            state['process_running'] = 'false'
+            state['trading_active'] = 'false'
+            state['process_id'] = None
+            state['script_status'] = 'stopped'
+            write_trading_state(state)
+            
     else:
-        state['trading_active'] = 'false'
-        state['process_id'] = None
-        state['script_status'] = 'stopped'
-        state['process_running'] = 'false'
-        state['actual_running_pids'] = []
-    
-    # Save updated state
-    write_trading_state(state)
+            state['process_running'] = 'false'
+            state['trading_active'] = 'false'
+            state['process_id'] = None
+            state['script_status'] = 'stopped'
+            write_trading_state(state)
     
     return jsonify(state)
 
@@ -1185,31 +1022,16 @@ def get_recent_logs():
     """Get recent trading logs via API"""
     try:
         logs = []
-
-        # Read from main trading log file
         if os.path.exists(TRADING_LOG_FILE):
             with open(TRADING_LOG_FILE, 'r') as f:
                 lines = f.readlines()
-                logs.extend(lines[-10:][::-1])  # Last 10 lines, most recent first
-
-        # Prepare today's date format
-        today_str = datetime.now().strftime('%Y-%m-%d')
-
-        # Search for matching additional log file in current directory
-        current_dir = os.getcwd()
-        for fname in os.listdir(current_dir):
-            if fname.startswith("nifty_supertrend_option_selling") and today_str in fname:
-                file_path = os.path.join(current_dir, fname)
-                with open(file_path, 'r') as f:
-                    lines = f.readlines()
-                    logs.extend(lines[-20:][::-1])
-                break  # Stop after the first match
-
+                logs = lines[-10:]  # Last 10 lines
+                logs.reverse()  # Most recent first
+        
         return jsonify({
             'status': 'success',
             'logs': logs
         })
-
     except Exception as e:
         return jsonify({
             'status': 'error',

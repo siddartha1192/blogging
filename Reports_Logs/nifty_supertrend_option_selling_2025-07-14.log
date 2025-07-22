@@ -1,0 +1,24 @@
+2025-07-14 04:46:51,453 - Starting Nifty Option Selling Strategy
+2025-07-14 04:46:51,480 - No existing trading data found for data-PAPER.pickle
+2025-07-14 04:46:51,518 - Waiting 269.1 minutes until trading starts at 2025-07-14 09:16:00+05:30
+2025-07-14 11:31:13,349 - Starting Nifty Option Selling Strategy
+2025-07-14 11:31:13,365 - No existing trading data found for data-PAPER.pickle
+2025-07-14 11:31:24,580 - Spot Price: 25041.25, Supertrend: Red, Below EMA
+2025-07-14 11:31:24,580 - Sell signal detected
+2025-07-14 11:31:47,947 - Selected call to sell: NSE:NIFTY2572425300CE with delta ~0.4103515352372281
+2025-07-14 11:31:47,947 - Selected call to buy: NSE:NIFTY2572425550CE with delta ~0.30507935723509805
+2025-07-14 11:31:47,947 - PAPER TRADE: BUY 75 NSE:NIFTY2572425550CE @ MARKET
+2025-07-14 11:31:47,947 - PAPER TRADE: SELL 75 NSE:NIFTY2572425300CE @ MARKET
+2025-07-14 11:31:47,979 - Entry: Sell Call NSE:NIFTY2572425300CE @ 100.2, Buy Call NSE:NIFTY2572425550CE @ 42.8
+2025-07-14 11:45:53,874 - Starting Nifty Option Selling Strategy
+2025-07-14 11:45:57,427 - Spot Price: 25030.45, Supertrend: Red, Below EMA
+2025-07-14 11:46:59,843 - Spot Price: 25033.2, Supertrend: Red, Below EMA
+2025-07-14 11:48:02,314 - Spot Price: 25038.65, Supertrend: Red, Below EMA
+2025-07-14 11:49:04,904 - Spot Price: 25043.1, Supertrend: Red, Below EMA
+2025-07-14 11:50:07,304 - Spot Price: 25039.45, Supertrend: Red, Below EMA
+2025-07-14 11:51:11,875 - Spot Price: 25042.95, Supertrend: Red, Below EMA
+2025-07-14 11:52:14,637 - Spot Price: 25039.15, Supertrend: Red, Below EMA
+2025-07-14 11:53:16,983 - Spot Price: 25036.55, Supertrend: Red, Below EMA
+2025-07-14 11:54:19,166 - Spot Price: 25035.2, Supertrend: Red, Below EMA
+2025-07-14 11:55:21,503 - Spot Price: 25038.0, Supertrend: Red, Below EMA
+2025-07-14 11:56:24,255 - Spot Price: 25033.45, Supertrend: Red, Below EMA

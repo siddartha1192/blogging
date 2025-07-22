@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Dashboard - SiddarthaDas Trading</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .dashboard-container {
+            margin-top: 20px;
+            padding: 0 15px;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .header-card {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+        }
+        
+        .status-card {
+            text-align: center;
+            padding: 25px;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .status-running {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .status-stopped {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white;
+        }
+        
+        .status-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+        
+        .status-info {
+            background: linear-gradient(135deg, #17a2b8, #007bff);
+            color: white;
+        }
+        
+        .control-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            height: 100%;
+        }
+        
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            height: 350px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .log-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .log-container::-webkit-scrollbar-track {
+            background: #333;
+            border-radius: 4px;
+        }
+        
+        .log-container::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+        
+        .token-status {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 2px solid;
+        }
+        
+        .token-valid {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .token-invalid {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .report-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+        }
+        
+        .btn-custom {
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .status-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .last-updated {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        /* Enhanced styles for improved stop controls */
+        .emergency-stop {
+            background: linear-gradient(135deg, #dc3545, #bd2130) !important;
+            border: 2px solid #721c24;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+
+        .process-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .force-stop-warning {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+        }
+
+        .status-blinking {
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin-top: 10px;
+                padding: 0 10px;
+            }
+            
+            .status-card {
+                height: auto;
+                padding: 20px;
+            }
+            
+            .control-panel {
+                padding: 20px;
+            }
+            
+            .log-container {
+                height: 250px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid dashboard-container">
+        <!-- Header -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card header-card">
+                    <div class="card-body text-center py-4">
+                        <h1 class="mb-2">
+                            <i class="fas fa-chart-line me-3"></i>
+                            SiddarthaDas Trading Dashboard
+                        </h1>
+                        <p class="mb-0 opacity-75 fs-5">NIFTY Options Supertrend Strategy Control Center</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Token Status -->
+        <div class="row">
+            <div class="col-12">
+                <div id="tokenStatus" class="token-status">
+                    {% if state.access_token %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Access Token: Active</strong>
+                                <small class="ms-2 opacity-75">
+                                    (Created: {{ state.token_date[:19] if state.token_date else 'Unknown' }})
+                                </small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-success" onclick="checkToken()">
+                                <i class="fas fa-sync me-1"></i> Verify Token
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>No Access Token Found</strong>
+                                <small class="ms-2">Please create an access token to start trading</small>
+                            </div>
+                            <a href="{{ url_for('create_access_token') }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-key me-1"></i> Create Token
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card {% if state.trading_active %}status-running{% else %}status-stopped{% endif %}" id="mainStatusCard">
+                    <div class="status-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h5 class="mb-2">Trading Status</h5>
+                    <div class="metric-value" id="tradingStatus">
+                        {{ 'RUNNING' if state.trading_active else 'STOPPED' }}
+                    </div>
+                    <div id="processInfo">
+                        {% if state.process_id %}
+                            <small>PID: {{ state.process_id }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card status-info">
+                    <div class="status-icon">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <h5 class="mb-2">Last Started</h5>
+                    <div class="metric-value">
+                        {{ state.last_started[:19] if state.last_started else 'Never' }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card bg-secondary text-white">
+                    <div class="status-icon">
+                        <i class="fas fa-stop-circle"></i>
+                    </div>
+                    <h5 class="mb-2">Last Stopped</h5>
+                    <div class="metric-value">
+                        {{ state.last_stopped[:19] if state.last_stopped else 'Never' }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card status-card bg-dark text-white">
+                    <div class="status-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h5 class="mb-2">System Status</h5>
+                    <div class="metric-value" id="systemStatus">
+                        {{ state.script_status.upper() if state.script_status else 'UNKNOWN' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Process Information -->
+        <div class="row" id="processSection" style="display: none;">
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Process Information & Advanced Controls
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="processDetails" class="process-info">
+                            <!-- Process details will be populated by JavaScript -->
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-info w-100 btn-custom" onclick="checkRunningProcesses()">
+                                    <i class="fas fa-search me-2"></i>
+                                    Check All Processes
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-warning w-100 btn-custom" onclick="createStopSignal()">
+                                    <i class="fas fa-flag me-2"></i>
+                                    Send Stop Signal
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn force-stop-warning w-100 btn-custom" onclick="forceStopAll()">
+                                    <i class="fas fa-skull-crossbones me-2"></i>
+                                    FORCE KILL ALL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="control-panel">
+                    <h5 class="section-title">
+                        <i class="fas fa-sliders-h me-2"></i>
+                        Trading Controls
+                    </h5>
+                    <div class="d-grid gap-3">
+                        <button id="startBtn" 
+                                class="btn btn-success btn-lg btn-custom"
+                                onclick="startTrading()" 
+                                {% if not state.access_token or state.trading_active %}disabled{% endif %}>
+                            <i class="fas fa-play me-2"></i>
+                            Start Trading Script
+                        </button>
+                        
+                        <div class="row">
+                            <div class="col-8">
+                                <button id="stopBtn" 
+                                        class="btn btn-danger btn-lg btn-custom w-100"
+                                        onclick="stopTrading()" 
+                                        {% if not state.trading_active %}disabled{% endif %}>
+                                    <i class="fas fa-stop me-2"></i>
+                                    Stop Trading Script
+                                </button>
+                            </div>
+                            <div class="col-4">
+                                <button id="emergencyStopBtn" 
+                                        class="btn emergency-stop btn-lg btn-custom w-100"
+                                        onclick="emergencyStop()"
+                                        {% if not state.trading_active %}disabled{% endif %}>
+                                    <i class="fas fa-ban me-2"></i>
+                                    EMERGENCY
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <button class="btn btn-info btn-custom w-100" onclick="refreshStatus()">
+                                    <i class="fas fa-sync me-2"></i>
+                                    Refresh Status
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-warning btn-custom w-100" onclick="refreshLogs()">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    Refresh Logs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="control-panel">
+                    <h5 class="section-title">
+                        <i class="fas fa-tools me-2"></i>
+                        Quick Actions
+                    </h5>
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('create_access_token') }}" class="btn btn-outline-primary btn-custom">
+                            <i class="fas fa-key me-2"></i>
+                            Manage Access Token
+                        </a>
+                        
+                        <button class="btn btn-outline-success btn-custom" onclick="checkToken()">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            Verify Token Status
+                        </button>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <a href="{{ url_for('home') }}" class="btn btn-outline-secondary btn-custom w-100">
+                                    <i class="fas fa-home me-2"></i>
+                                    Back to Blog
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-outline-dark btn-custom w-100" onclick="window.location.reload()">
+                                    <i class="fas fa-redo me-2"></i>
+                                    Reload Page
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Logs -->
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-terminal me-2"></i>
+                            Live Trading Logs
+                            <button class="btn btn-sm btn-outline-light float-end" onclick="refreshLogs()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="logContainer" class="log-container">
+                            {% for log in recent_logs %}
+                                <div>{{ log.strip() }}</div>
+                            {% else %}
+                                <div class="text-center text-muted mt-5">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No logs available yet. Start trading to see activity.
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Generation -->
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="report-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Trading Reports & Analytics
+                    </h5>
+                    
+                    {% if csv_files %}
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="mb-3">
+                                    <label for="csvSelect" class="form-label fw-bold">
+                                        <i class="fas fa-file-csv me-1"></i>
+                                        Select CSV file to generate report:
+                                    </label>
+                                    <select id="csvSelect" class="form-select">
+                                        <option value="">Choose a CSV file...</option>
+                                        {% for csv_file in csv_files %}
+                                            <option value="{{ csv_file }}">{{ csv_file }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-primary btn-lg w-100 btn-custom" onclick="generateReport()">
+                                    <i class="fas fa-file-pdf me-2"></i>
+                                    Generate HTML Report
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>No trading CSV files found.</strong><br>
+                            Start trading to generate data and create performance reports.
+                        </div>
+                    {% endif %}
+
+                    <!-- Generated Reports -->
+                    <div id="reportsList" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessages" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050; max-width: 400px;"></div>
+        
+        <!-- Last Updated -->
+        <div class="last-updated" id="lastUpdated">
+            Last updated: Loading...
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let refreshInterval;
+        let statusCheckCount = 0;
+        
+
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                refreshStatus();
+                refreshLogs();
+                statusCheckCount++;
+                
+                checkRunningProcesses(true); // Silent check
+                
+            }, 2460000);
+        }
+
+        function startTrading() {
+            showStatus('🚀 Starting trading script...', 'info');
+            
+            const btn = document.getElementById('startBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Starting...';
+            
+            fetch('/SiddarthaDas_trading/start_script', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                showStatus(data.message, data.status === 'success' ? 'success' : 'danger');
+                if (data.status === 'success') {
+                    setTimeout(refreshStatus, 3000);
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-play me-2"></i>Start Trading Script';
+                }
+            })
+            .catch(error => {
+                showStatus('❌ Error: ' + error.message, 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play me-2"></i>Start Trading Script';
+            });
+        }
+
+        function stopTrading() {
+            if (confirm('🛑 Are you sure you want to stop the trading script?')) {
+                showStatus('⏹️ Attempting graceful stop...', 'info');
+                
+                const btn = document.getElementById('stopBtn');
+                const emergencyBtn = document.getElementById('emergencyStopBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Stopping...';
+                
+                fetch('/SiddarthaDas_trading/stop_script', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showStatus(data.message, data.status === 'success' ? 'success' : 'warning');
+                    
+                    if (data.status === 'success') {
+                        setTimeout(refreshStatus, 3000);
+                    } else if (data.status === 'warning') {
+                        // Show process info section for manual intervention
+                        document.getElementById('processSection').style.display = 'block';
+                        showStatus('⚠️ Process may still be running. Use emergency stop if needed.', 'warning');
+                        setTimeout(refreshStatus, 5000);
+                    }
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-stop me-2"></i>Stop Trading Script';
+                })
+                .catch(error => {
+                    showStatus('❌ Error: ' + error.message, 'danger');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-stop me-2"></i>Stop Trading Script';
+                });
+            }
+        }
+
+        function emergencyStop() {
+            if (confirm('🚨 EMERGENCY STOP: This will forcefully terminate all trading processes. Are you sure?')) {
+                showStatus('🚨 EMERGENCY STOP INITIATED!', 'danger');
+                
+                const btn = document.getElementById('emergencyStopBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>KILLING...';
+                
+                // First try to create stop signal
+                createStopSignal();
+                
+                // Then force stop after 2 seconds
+                setTimeout(() => {
+                    forceStopAll();
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-ban me-2"></i>EMERGENCY';
+                }, 2000);
+            }
+        }
+
+        function createStopSignal() {
+            showStatus('📝 Creating stop signal file...', 'info');
+            
+            fetch('/SiddarthaDas_trading/create_stop_signal', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus('✅ Stop signal created', 'success');
+                } else {
+                    showStatus('⚠️ Failed to create stop signal', 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating stop signal:', error);
+            });
+        }
+
+        function forceStopAll() {
+            showStatus('💀 Force stopping ALL trading processes...', 'danger');
+            
+            fetch('/SiddarthaDas_trading/force_stop', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                showStatus(data.message, data.status === 'success' ? 'success' : 'danger');
+                setTimeout(refreshStatus, 3000);
+                
+                // Hide process section if successful
+                if (data.status === 'success') {
+                    document.getElementById('processSection').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                showStatus('❌ Error in force stop: ' + error.message, 'danger');
+            });
+        }
+
+        function checkRunningProcesses(silent = false) {
+            if (!silent) {
+                showStatus('🔍 Checking all running processes...', 'info');
+            }
+            
+            fetch('/SiddarthaDas_trading/api/processes')
+            .then(response => response.json())
+            .then(data => {
+                const processDetails = document.getElementById('processDetails');
+                const processSection = document.getElementById('processSection');
+                
+                if (data.processes && data.processes.length > 0) {
+                    let processInfo = '<h6><i class="fas fa-exclamation-triangle me-2"></i>Running UpdatedLatest.py Processes:</h6>';
+                    data.processes.forEach((proc, index) => {
+                        processInfo += `
+                            <div class="alert alert-warning mb-2">
+                                <strong>Process ${index + 1}:</strong> PID: ${proc.pid}<br>
+                                <small>Command: ${proc.cmdline || 'N/A'}</small>
+                            </div>
+                        `;
+                    });
+                    processDetails.innerHTML = processInfo;
+                    processSection.style.display = 'block';
+                    
+                    if (!silent) {
+                        showStatus(`⚠️ Found ${data.processes.length} running process(es)`, 'warning');
+                    }
+                } else {
+                    processDetails.innerHTML = '<div class="alert alert-success"><i class="fas fa-check me-2"></i>No UpdatedLatest.py processes found running.</div>';
+                    processSection.style.display = 'none';
+                    
+                    if (!silent) {
+                        showStatus('✅ No UpdatedLatest.py processes found', 'success');
+                    }
+                }
+            })
+            .catch(error => {
+                if (!silent) {
+                    showStatus('❌ Error checking processes: ' + error.message, 'danger');
+                }
+                console.error('Error checking processes:', error);
+            });
+        }
+
+        function refreshStatus() {
+            fetch('/SiddarthaDas_trading/api/status')
+            .then(response => response.json())
+            .then(data => {
+                // Update trading status with enhanced info
+                const statusElement = document.getElementById('tradingStatus');
+                const systemElement = document.getElementById('systemStatus');
+                const processInfo = document.getElementById('processInfo');
+                const mainStatusCard = document.getElementById('mainStatusCard');
+                const startBtn = document.getElementById('startBtn');
+                const stopBtn = document.getElementById('stopBtn');
+                const emergencyBtn = document.getElementById('emergencyStopBtn');
+                
+                // Check if actually running based on multiple indicators
+                const isRunning = (data.trading_active === true || data.trading_active === 'true') && 
+                                (data.process_running === true || data.process_running === 'true');
+                
+                if (isRunning) {
+                    statusElement.textContent = 'RUNNING';
+                    mainStatusCard.className = 'card status-card status-running';
+                    systemElement.textContent = 'ACTIVE';
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    emergencyBtn.disabled = false;
+                    
+                    // Show process info if available
+                    let processText = '';
+                    if (data.process_id) {
+                        processText += `<small>Main PID: ${data.process_id}</small><br>`;
+                    }
+                    if (data.actual_running_pids && data.actual_running_pids.length > 0) {
+                        processText += `<small>All PIDs: ${data.actual_running_pids.join(', ')}</small>`;
+                    }
+                    processInfo.innerHTML = processText;
+                    
+                    // If multiple processes detected, show warning
+                    if (data.actual_running_pids && data.actual_running_pids.length > 1) {
+                        statusElement.classList.add('status-blinking');
+                        systemElement.textContent = 'MULTIPLE PROCESSES';
+                        document.getElementById('processSection').style.display = 'block';
+                    }
+                } else {
+                    statusElement.textContent = 'STOPPED';
+                    statusElement.classList.remove('status-blinking');
+                    mainStatusCard.className = 'card status-card status-stopped';
+                    systemElement.textContent = 'INACTIVE';
+                    startBtn.disabled = !data.access_token;
+                    stopBtn.disabled = true;
+                    emergencyBtn.disabled = true;
+                    processInfo.innerHTML = '';
+                    
+                    // Hide process section when stopped
+                    document.getElementById('processSection').style.display = 'none';
+                }
+                
+                // Update button text if they're in loading state
+                if (!startBtn.disabled && startBtn.innerHTML.includes('Starting...')) {
+                    startBtn.innerHTML = '<i class="fas fa-play me-2"></i>Start Trading Script';
+                }
+                
+                if (stopBtn.disabled && stopBtn.innerHTML.includes('Stopping...')) {
+                    stopBtn.innerHTML = '<i class="fas fa-stop me-2"></i>Stop Trading Script';
+                }
+                
+                // Update token status
+                updateTokenStatus(data.access_token, data.token_date);
+                
+                // Update last updated time
+                updateLastUpdated();
+            })
+            .catch(error => {
+                console.error('Error refreshing status:', error);
+                updateLastUpdated('Error');
+                
+                // Show error state
+                document.getElementById('systemStatus').textContent = 'ERROR';
+                showStatus('❌ Failed to refresh status', 'danger');
+            });
+        }
+
+        function refreshLogs() {
+            fetch('/SiddarthaDas_trading/api/logs')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const logContainer = document.getElementById('logContainer');
+                    if (data.logs && data.logs.length > 0) {
+                        logContainer.innerHTML = data.logs.map(log => `<div>${log.trim()}</div>`).join('');
+                    } else {
+                        logContainer.innerHTML = `
+                            <div class="text-center text-muted mt-5">
+                                <i class="fas fa-info-circle me-2"></i>
+                                No recent logs available.
+                            </div>
+                        `;
+                    }
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                }
+            })
+            .catch(error => {
+                console.error('Error refreshing logs:', error);
+            });
+        }
+
+        function checkToken() {
+            showStatus('🔍 Checking token validity...', 'info');
+            
+            fetch('/SiddarthaDas_trading/check_token')
+            .then(response => response.json())
+            .then(data => {
+                showStatus(data.message, data.status === 'success' ? 'success' : 'warning');
+                updateTokenStatus(data.status === 'success', data.token_date);
+            })
+            .catch(error => {
+                showStatus('❌ Error checking token: ' + error.message, 'danger');
+            });
+        }
+
+        function updateTokenStatus(hasToken, tokenDate) {
+            const tokenStatus = document.getElementById('tokenStatus');
+            if (hasToken) {
+                tokenStatus.className = 'token-status token-valid';
+                tokenStatus.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Access Token: Active</strong>
+                            <small class="ms-2 opacity-75">
+                                (Created: ${tokenDate ? tokenDate.slice(0, 19) : 'Unknown'})
+                            </small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-success" onclick="checkToken()">
+                            <i class="fas fa-sync me-1"></i> Verify Token
+                        </button>
+                    </div>
+                `;
+            } else {
+                tokenStatus.className = 'token-status token-invalid';
+                tokenStatus.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>No Access Token Found</strong>
+                            <small class="ms-2">Please create an access token to start trading</small>
+                        </div>
+                        <a href="/SiddarthaDas_trading/create_token" class="btn btn-sm btn-primary">
+                            <i class="fas fa-key me-1"></i> Create Token
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        function generateReport() {
+            const csvFile = document.getElementById('csvSelect').value;
+            
+            if (!csvFile) {
+                showStatus('⚠️ Please select a CSV file first', 'warning');
+                return;
+            }
+
+            showStatus('📊 Generating report...', 'info');
+
+            fetch('/SiddarthaDas_trading/generate_report', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({csv_file: csvFile})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus('✅ ' + data.message, 'success');
+                    
+                    // Add report to list
+                    const reportsList = document.getElementById('reportsList');
+                    const reportDiv = document.createElement('div');
+                    reportDiv.className = 'alert alert-success mt-3';
+                    reportDiv.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-file-alt me-2"></i>
+                                <strong>Report Generated:</strong> ${data.report_file}
+                                <br><small class="text-muted">Generated on ${new Date().toLocaleString()}</small>
+                            </div>
+                            <a href="/SiddarthaDas_trading/view_report/${data.report_file}" 
+                               target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                View Report
+                            </a>
+                        </div>
+                    `;
+                    reportsList.appendChild(reportDiv);
+                    
+                    // Scroll to the new report
+                    reportDiv.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    showStatus('❌ Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus('❌ Error: ' + error.message, 'danger');
+            });
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessages');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.style.marginBottom = '10px';
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <div class="me-2">
+                        ${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : type === 'danger' ? '❌' : 'ℹ️'}
+                    </div>
+                    <div class="flex-grow-1">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            statusDiv.appendChild(alertDiv);
+            
+            // Auto-remove after 8 seconds (longer for better readability)
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 8000);
+        }
+
+        function updateLastUpdated(status = 'Updated') {
+            const lastUpdated = document.getElementById('lastUpdated');
+            const now = new Date().toLocaleTimeString();
+            lastUpdated.textContent = `${status}: ${now}`;
+        }
+
+        // Enhanced keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl + S to stop trading
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                const stopBtn = document.getElementById('stopBtn');
+                if (!stopBtn.disabled) {
+                    stopTrading();
+                }
+            }
+            
+            // Ctrl + R to refresh status
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                refreshStatus();
+                refreshLogs();
+                showStatus('🔄 Manual refresh triggered', 'info');
+            }
+            
+            // Ctrl + E for emergency stop
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                const emergencyBtn = document.getElementById('emergencyStopBtn');
+                if (!emergencyBtn.disabled) {
+                    emergencyStop();
+                }
+            }
+        });
+
+        // Connection status monitoring
+        let connectionLost = false;
+        
+        function checkConnection() {
+            fetch('/SiddarthaDas_trading/api/status')
+            .then(response => {
+                if (connectionLost) {
+                    connectionLost = false;
+                    showStatus('🔗 Connection restored', 'success');
+                }
+            })
+            .catch(error => {
+                if (!connectionLost) {
+                    connectionLost = true;
+                    showStatus('⚡ Connection lost - attempting to reconnect...', 'warning');
+                }
+            });
+        }
+
+        // Check connection every 40 Min
+        setInterval(checkConnection, 2400000);
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('🚀 Dashboard loaded', 'info');
+            refreshStatus();
+            refreshLogs();
+            startAutoRefresh();
+            updateLastUpdated('Loaded');
+            
+            // Show keyboard shortcuts hint
+            setTimeout(() => {
+                showStatus('💡 Shortcuts: Ctrl+S (Stop), Ctrl+R (Refresh), Ctrl+E (Emergency)', 'info');
+            }, 2000);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+
+        // Visibility change handling (pause updates when tab not visible)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                if (refreshInterval) {
+                    clearInterval(refreshInterval);
+                }
+            } else {
+                startAutoRefresh();
+                refreshStatus();
+                refreshLogs();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIFTY Options Trading P&L Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .summary {
+            padding: 40px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 3px solid #3498db;
+        }
+        
+        .summary h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .summary-card h3 {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .summary-card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        .summary-card .value.negative {
+            color: #e74c3c;
+        }
+        
+        .summary-card .value.neutral {
+            color: #3498db;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            padding: 20px 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 20px 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .strategy-name {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+        
+        .strategy-number {
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+        
+        .pnl-positive {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .pnl-negative {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .pnl-open {
+            color: #f39c12;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .spot-movement {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        
+        .spot-change {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .trade-details {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .trade-leg {
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .sell-leg {
+            background: #ffebee;
+            border-left-color: #e74c3c;
+        }
+        
+        .buy-leg {
+            background: #e8f5e8;
+            border-left-color: #27ae60;
+        }
+        
+        .open-leg {
+            background: #fff3e0;
+            border-left-color: #f39c12;
+        }
+        
+        .leg-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .leg-details {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .total-row {
+            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .total-row td {
+            border-top: 3px solid #3498db;
+            padding: 25px 15px;
+        }
+        
+        .credit-debit {
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .credit {
+            color: #27ae60;
+        }
+        
+        .debit {
+            color: #e74c3c;
+        }
+        
+        .date-badge {
+            background: #ecf0f1;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #2c3e50;
+            white-space: nowrap;
+        }
+        
+        .open-badge {
+            background: #f39c12;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 12px;
+            }
+            
+            .header {
+                padding: 25px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .summary, .content {
+                padding: 25px;
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+            .summary-card {
+                padding: 20px;
+            }
+            
+            .summary-card .value {
+                font-size: 2rem;
+            }
+            
+            table {
+                font-size: 0.85rem;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>NIFTY Options Trading Report</h1>
+            <div class="subtitle">Supertrend Strategy Analysis | Generated on July 14, 2025</div>
+        </div>
+        
+        <div class="summary">
+            <h2>Performance Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>Total P&L (Closed)</h3>
+                    <div class="value">₹0.00</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Strategies</h3>
+                    <div class="value neutral">1</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Closed Positions</h3>
+                    <div class="value neutral">0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Winning Trades</h3>
+                    <div class="value">0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Win Rate</h3>
+                    <div class="value">0%</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Open Positions</h3>
+                    <div class="value neutral">1</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <h2 class="section-title">Detailed Trade Analysis</h2>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Period</th>
+                            <th>Spot Movement</th>
+                            <th>Trade Details</th>
+                            <th>Credit/Debit</th>
+                            <th>P&L (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="strategy-name">
+                                <span class="strategy-number">#1</span>Short Call Spread
+                                 <span class="open-badge">OPEN</span>
+                            </td>
+                            <td>
+                                <div class="date-badge">2025-07-14</div>
+                                <div style="text-align: center; margin: 5px 0;">to</div>
+                                <div class="date-badge">OPEN</div>
+                            </td>
+                            <td class="spot-movement">
+                                25,041 → Current<br>
+                                <span class="spot-change">(Active)</span>
+                            </td>
+                            <td class="trade-details">
+                                <div class="trade-leg open-leg">
+                                    <div class="leg-title">SELL 25300 CE</div>
+                                    <div class="leg-details">Entry: ₹100.2 → Exit: ₹OPEN</div>
+                                </div>
+                                <div class="trade-leg open-leg">
+                                    <div class="leg-title">BUY 25550 CE</div>
+                                    <div class="leg-details">Entry: ₹42.8 → Exit: ₹OPEN</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="credit-debit">
+                                    <div class="credit">Credit: ₹4,305</div>
+                                    <div class="" style="color: #f39c12;">
+                                        Status: OPEN
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="pnl-open">OPEN</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="5" style="text-align: right;"><strong>TOTAL P&L (Closed Positions)</strong></td>
+                            <td class="pnl-positive"><strong>₹0</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 40px; padding: 30px; background: #f8f9fa; border-radius: 12px; border-left: 5px solid #3498db;">
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">Key Insights</h3>
+                <ul style="line-height: 1.8; color: #2c3e50;">
+                    <li><strong>Strategy Mix:</strong> 1 Short Call Spreads, 0 Long Put Spreads showing diversified approach</li>
+                    <li><strong>Risk Management:</strong> Consistent use of Supertrend signals for entries and exits</li>
+                    <li><strong>Lot Size:</strong> All calculations based on NIFTY lot size of 75 contracts</li><li><strong>Open Positions:</strong> 1 active position(s) with ₹4,305 total credit collected</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

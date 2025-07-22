@@ -1,0 +1,59 @@
+2025-07-22 11:03:53,897 - Starting Nifty Option Selling Strategy
+2025-07-22 11:04:00,726 - Spot Price: 25079.2, Supertrend: Red, Above EMA
+2025-07-22 11:05:04,597 - Spot Price: 25077.0, Supertrend: Red, Above EMA
+2025-07-22 11:06:07,311 - Spot Price: 25073.7, Supertrend: Red, Above EMA
+2025-07-22 11:07:09,608 - Spot Price: 25058.05, Supertrend: Red, Below EMA
+2025-07-22 11:07:09,608 - Sell signal detected
+2025-07-22 11:07:19,864 - Selected call to sell: NSE:NIFTY25JUL25300CE with delta ~0.41135358417579815
+2025-07-22 11:07:19,864 - Selected call to buy: NSE:NIFTY25JUL25550CE with delta ~0.30115081232185176
+2025-07-22 11:07:19,864 - PAPER TRADE: BUY 75 NSE:NIFTY25JUL25550CE @ MARKET
+2025-07-22 11:07:19,865 - PAPER TRADE: SELL 75 NSE:NIFTY25JUL25300CE @ MARKET
+2025-07-22 11:07:19,871 - Entry: Sell Call NSE:NIFTY25JUL25300CE @ 71.3, Buy Call NSE:NIFTY25JUL25550CE @ 25.9
+2025-07-22 11:08:22,227 - Spot Price: 25063.85, Supertrend: Red, Below EMA
+2025-07-22 11:09:24,628 - Spot Price: 25057.55, Supertrend: Red, Below EMA
+2025-07-22 11:10:27,281 - Spot Price: 25060.05, Supertrend: Red, Below EMA
+2025-07-22 11:16:30,786 - Starting Nifty Option Selling Strategy
+2025-07-22 11:16:38,345 - Spot Price: 25069.9, Supertrend: Red, Above EMA
+2025-07-22 11:17:45,830 - Spot Price: 25066.05, Supertrend: Red, Below EMA
+2025-07-22 11:18:49,418 - Spot Price: 25058.8, Supertrend: Red, Below EMA
+2025-07-22 11:19:52,742 - Spot Price: 25051.05, Supertrend: Red, Below EMA
+2025-07-22 11:20:22,797 - Trading script stopped cleanly
+2025-07-22 11:35:14,490 - Starting Nifty Option Selling Strategy
+2025-07-22 11:35:19,046 - Spot Price: 25057.35, Supertrend: Red, Below EMA
+2025-07-22 11:36:22,008 - Spot Price: 25056.5, Supertrend: Red, Below EMA
+2025-07-22 11:37:25,404 - Spot Price: 25058.4, Supertrend: Red, Below EMA
+2025-07-22 11:38:29,194 - Spot Price: 25058.85, Supertrend: Red, Below EMA
+2025-07-22 11:39:32,315 - Spot Price: 25056.05, Supertrend: Red, Below EMA
+2025-07-22 11:40:37,141 - Spot Price: 25057.75, Supertrend: Red, Below EMA
+2025-07-22 11:41:40,668 - Spot Price: 25060.55, Supertrend: Red, Below EMA
+2025-07-22 11:42:44,265 - Spot Price: 25059.2, Supertrend: Red, Below EMA
+2025-07-22 11:48:07,077 - Spot Price: 25066.65, Supertrend: Red, Below EMA
+2025-07-22 11:49:10,078 - Spot Price: 25068.5, Supertrend: Red, Below EMA
+2025-07-22 11:50:14,223 - Spot Price: 25063.65, Supertrend: Red, Below EMA
+2025-07-22 11:51:18,120 - Spot Price: 25041.8, Supertrend: Red, Below EMA
+2025-07-22 11:52:21,252 - Spot Price: 25052.85, Supertrend: Red, Below EMA
+2025-07-22 11:53:24,898 - Spot Price: 25054.6, Supertrend: Red, Below EMA
+2025-07-22 11:54:29,025 - Spot Price: 25064.95, Supertrend: Red, Below EMA
+2025-07-22 11:55:32,590 - Spot Price: 25070.95, Supertrend: Red, Above EMA
+2025-07-22 11:56:37,542 - Spot Price: 25080.5, Supertrend: Red, Above EMA
+2025-07-22 11:57:41,648 - Spot Price: 25081.05, Supertrend: Red, Above EMA
+2025-07-22 11:58:44,468 - Spot Price: 25078.3, Supertrend: Red, Above EMA
+2025-07-22 11:59:34,482 - Trading script stopped cleanly
+2025-07-22 23:24:41,514 - Starting Nifty Option Selling Strategy
+2025-07-22 23:24:41,581 - Trading session ended. Positions maintained for next day.
+2025-07-22 23:24:41,581 - Trading script stopped cleanly
+2025-07-22 23:25:34,857 - Starting Nifty Option Selling Strategy
+2025-07-22 23:25:34,863 - Trading session ended. Positions maintained for next day.
+2025-07-22 23:25:34,863 - Trading script stopped cleanly
+2025-07-22 23:26:42,480 - Starting Nifty Option Selling Strategy
+2025-07-22 23:26:42,504 - Trading session ended. Positions maintained for next day.
+2025-07-22 23:26:42,505 - Trading script stopped cleanly
+2025-07-22 23:29:01,652 - Starting Nifty Option Selling Strategy
+2025-07-22 23:29:01,663 - Trading session ended. Positions maintained for next day.
+2025-07-22 23:29:01,663 - Trading script stopped cleanly
+2025-07-22 23:29:20,673 - Starting Nifty Option Selling Strategy
+2025-07-22 23:29:20,688 - Trading session ended. Positions maintained for next day.
+2025-07-22 23:29:20,688 - Trading script stopped cleanly
+2025-07-22 23:48:36,383 - Starting Nifty Option Selling Strategy
+2025-07-22 23:48:36,389 - Trading session ended. Positions maintained for next day.
+2025-07-22 23:48:36,389 - Trading script stopped cleanly

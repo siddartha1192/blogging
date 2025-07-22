@@ -843,7 +843,7 @@ def start_trading_script():
         
         # Start process
         script_path = '/home/siddartha1192/blogging/UpdatedLatest.py'
-        cmd = f'python "{script_path}" > /home/siddartha1192/blogging/trading_log.txt 2>&1'
+        cmd = f'"{sys.executable}" "{script_path}" > /home/siddartha1192/blogging/trading_log.txt 2>&1'
         process = subprocess.Popen(cmd, shell=True, cwd=os.path.dirname(script_path))
         
         # Update state

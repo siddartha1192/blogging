@@ -95,8 +95,8 @@ post_topics = db.Table('post_topics',
 
 
 # Global variables for trading state
-TRADING_STATE_FILE = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\trading_state.txt'
-TRADING_LOG_FILE = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\trading_execution.log'
+TRADING_STATE_FILE = 'trading_state.txt'
+TRADING_LOG_FILE = 'trading_execution.log'
 
 # Trading configuration (you can modify these)
 CLIENT_ID = 'V9GQM61IVI-100'  # Your client ID
@@ -731,7 +731,7 @@ def save_access_token():
             
             # Also save to daily file (as your script expects)
             today = dt.now('Asia/Kolkata').date()
-            with open(f'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\access-{today}.txt', 'w') as f:
+            with open(f'access-{today}.txt', 'w') as f:
                 f.write(access_token)
             
             log_trading_event("Access token generated successfully")
@@ -759,7 +759,7 @@ def save_access_token():
 def create_stop_signal():
     """Create stop signal file for graceful shutdown"""
     try:
-        stop_file = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\trading_stop_signal.txt'
+        stop_file = 'trading_stop_signal.txt'
         
         with open(stop_file, 'w') as f:
             f.write('STOP_REQUESTED')
@@ -834,7 +834,7 @@ def start_trading_script():
             })
         
         # Start the trading script as subprocess
-        script_path = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\UpdatedLatest.py'  # Your trading script
+        script_path = 'UpdatedLatest.py'  # Your trading script
         if not os.path.exists(script_path):
             return jsonify({
                 'status': 'error',
@@ -842,8 +842,8 @@ def start_trading_script():
             }), 404
         
         # Start process
-        script_path = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\UpdatedLatest.py'
-        cmd = f'python "{script_path}" > C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\trading_log.txt 2>&1'
+        script_path = 'UpdatedLatest.py'
+        cmd = f'python "{script_path}" > trading_log.txt 2>&1'
         process = subprocess.Popen(cmd, shell=True, cwd=os.path.dirname(script_path))
         
         # Update state
@@ -924,7 +924,7 @@ def stop_trading_script():
         process_id = state['process_id']
         
         # Method 1: Create stop signal file
-        stop_file = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\trading_stop_signal.txt'
+        stop_file = 'trading_stop_signal.txt'
         try:
             with open(stop_file, 'w') as f:
                 f.write('STOP')
@@ -1024,7 +1024,7 @@ def force_stop_all():
         killed_processes = []
         
         # Create stop signal file
-        stop_file = 'C:\\Users\\sidda\\OneDrive\\Documents\\VS_Codes\\blogging\\trading_stop_signal.txt'
+        stop_file = 'trading_stop_signal.txt'
         with open(stop_file, 'w') as f:
             f.write('FORCE_STOP')
         
@@ -1186,7 +1186,7 @@ def get_recent_logs():
     try:
         logs = []
 
-        # Read from main trading log file
+        # Read from main trading log file   
         if os.path.exists(TRADING_LOG_FILE):
             with open(TRADING_LOG_FILE, 'r') as f:
                 lines = f.readlines()

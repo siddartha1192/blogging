@@ -813,7 +813,7 @@ def get_running_processes():
 # STEP 2: Route to Start Trading Script
 @app.route('/SiddarthaDas_trading/start_script', methods=['POST'])
 def start_trading_script():
-    """Start the trading script"""
+    """Start the trading script using shell script with virtual environment"""
     try:
         state = read_trading_state()
         
@@ -833,32 +833,59 @@ def start_trading_script():
                 'message': 'Trading script is already running, testing status: ' + runningStatus
             })
         
-        # Start the trading script as subprocess
-        script_path = '/home/siddartha1192/blogging/UpdatedLatest.py'  # Your trading script
-        if not os.path.exists(script_path):
+        # Path to the shell script
+        shell_script_path = '/home/siddartha1192/blogging/start_trading.sh'
+        
+        # Check if shell script exists
+        if not os.path.exists(shell_script_path):
             return jsonify({
                 'status': 'error',
-                'message': f'Trading script {script_path} not found'
+                'message': f'Shell script {shell_script_path} not found'
             }), 404
         
-        # Start process
-        script_path = '/home/siddartha1192/blogging/UpdatedLatest.py'
-        cmd = f'"{sys.executable}" "{script_path}" > /home/siddartha1192/blogging/trading_log.txt 2>&1'
-        process = subprocess.Popen(cmd, shell=True, cwd=os.path.dirname(script_path))
+        # Make sure shell script is executable
+        import stat
+        os.chmod(shell_script_path, os.stat(shell_script_path).st_mode | stat.S_IEXEC)
         
-        # Update state
-        state['trading_active'] = True
-        state['process_id'] = process.pid
-        state['last_started'] = datetime.now().isoformat()
-        state['script_status'] = 'running'
-        write_trading_state(state)
+        # Start process using shell script
+        process = subprocess.Popen(
+            ['/bin/bash', shell_script_path],
+            cwd='/home/siddartha1192/blogging',
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            preexec_fn=os.setsid  # Create new process group
+        )
         
-        log_trading_event(f"Trading script started with PID: {process.pid}")
+        # Give it a moment to start
+        import time
+        time.sleep(2)
         
-        return jsonify({
-            'status': 'success',
-            'message': f'Trading script started successfully with PID: {process.pid}'
-        })
+        # Check if process is still running
+        if process.poll() is None:
+            # Process is running
+            # Update state
+            state['trading_active'] = True
+            state['process_id'] = process.pid
+            state['last_started'] = datetime.now().isoformat()
+            state['script_status'] = 'running'
+            write_trading_state(state)
+            
+            log_trading_event(f"Trading script started with PID: {process.pid}")
+            
+            return jsonify({
+                'status': 'success',
+                'message': f'Trading script started successfully with PID: {process.pid}'
+            })
+        else:
+            # Process failed to start
+            stdout, stderr = process.communicate()
+            error_msg = stderr.decode() if stderr else stdout.decode()
+            log_trading_event(f"Failed to start script: {error_msg}")
+            
+            return jsonify({
+                'status': 'error',
+                'message': f'Failed to start trading script: {error_msg}'
+            }), 500
         
     except Exception as e:
         log_trading_event(f"Error starting script: {str(e)}")
@@ -866,7 +893,7 @@ def start_trading_script():
             'status': 'error',
             'message': f'Error starting trading script: {str(e)}'
         }), 500
-
+        
 # STEP 3: Dashboard Route
 @app.route('/SiddarthaDas_trading/dashboard')
 def trading_dashboard():

@@ -1196,7 +1196,7 @@ def get_recent_logs():
         today_str = datetime.now().strftime('%Y-%m-%d')
 
         # Search for matching additional log file in current directory
-        current_dir = os.getcwd()
+        current_dir = '/home/siddartha1192/blogging/'
         for fname in os.listdir(current_dir):
             if fname.startswith("nifty_supertrend_option_selling") and today_str in fname:
                 file_path = os.path.join(current_dir, fname)

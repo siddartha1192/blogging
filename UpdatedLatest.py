@@ -983,7 +983,7 @@ def main():
                     break
         
         # Sleep before next iteration, but check for stop signal periodically
-        sleep_time = 60
+        sleep_time = 3600
         while sleep_time > 0 and not STOP_TRADING and not check_stop_signal():
             time.sleep(min(10, sleep_time))  # Check every 10 seconds
             sleep_time -= 10

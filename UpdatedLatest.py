@@ -27,10 +27,11 @@ strike_diff = 50
 account_type = 'PAPER'  # Change to 'LIVE' when ready to place real orders
 quantity = 75
 
-if exchange == 'NSE':
-    time_zone = "Asia/Kolkata"
+# Fixed timezone handling - always use IST regardless of server location
+time_zone = "Asia/Kolkata"
+ist_tz = pytz.timezone(time_zone)
 
-# Trading hours
+# Trading hours (IST)
 start_hour, start_min = 9, 16
 end_hour, end_min = 15, 18
 
@@ -51,9 +52,10 @@ logging.basicConfig(level=logging.INFO,
 
 def get_access_token():
     """Get access token from file or generate new one"""
-    if os.path.exists(f'access-{dt.now(time_zone).date()}.txt'):
+    current_date_ist = dt.now(time_zone).date()
+    if os.path.exists(f'access-{current_date_ist}.txt'):
         print('Access token exists')
-        with open(f'access-{dt.now(time_zone).date()}.txt', 'r') as f:
+        with open(f'access-{current_date_ist}.txt', 'r') as f:
             access_token = f.read()
     else:
         # Define response type and state for the session
@@ -95,7 +97,7 @@ def get_access_token():
 
             # Save the access token to access.txt
             access_token = response["access_token"]
-            with open(f'access-{dt.now(time_zone).date()}.txt', 'w') as k:
+            with open(f'access-{current_date_ist}.txt', 'w') as k:
                 k.write(access_token)
         except Exception as e:
             print(e, response)
@@ -240,8 +242,10 @@ def calculate_ema(df, period=20):
 
 def get_historical_data(fyers, ticker, interval='1D', days=10):
     """Fetch historical data for the given ticker"""
-    from_date = dt.now(time_zone).date() - dt.duration(days=days)
-    to_date = dt.now(time_zone).date()
+    # Use IST timezone for date calculations
+    current_ist = dt.now(time_zone)
+    from_date = current_ist.subtract(days=days).date()
+    to_date = current_ist.date()
     
     data = {
         "symbol": ticker,
@@ -258,8 +262,8 @@ def get_historical_data(fyers, ticker, interval='1D', days=10):
     if response['s'] == 'ok':
         hist_data = pd.DataFrame(response['candles'])
         hist_data.columns = ['date', 'open', 'high', 'low', 'close', 'volume']
-        ist = pytz.timezone('Asia/Kolkata')
-        hist_data['date'] = pd.to_datetime(hist_data['date'], unit='s').dt.tz_localize('UTC').dt.tz_convert(ist)
+        # Convert to IST timezone
+        hist_data['date'] = pd.to_datetime(hist_data['date'], unit='s').dt.tz_localize('UTC').dt.tz_convert(ist_tz)
         hist_data.set_index('date', inplace=True)
         return hist_data
     else:
@@ -328,8 +332,8 @@ def calculate_implied_volatility(option_chain, expiry_date, spot_price, nifty_hi
     else:
         iv = default_iv
     
-    # Calculate days to expiry
-    current_date = dt.now(time_zone).date()
+    # Calculate days to expiry using IST timezone
+    current_date_ist = dt.now(time_zone).date()
     
     # Handle different date formats that might be in expiry_date
     if isinstance(expiry_date, dict) and 'date' in expiry_date:
@@ -357,7 +361,7 @@ def calculate_implied_volatility(option_chain, expiry_date, spot_price, nifty_hi
     else:
         expiry_date_obj = expiry_datetime
     
-    days_to_expiry = (expiry_date_obj - current_date).days + 1
+    days_to_expiry = (expiry_date_obj - current_date_ist).days + 1
     days_to_expiry = max(days_to_expiry, 1)  # Ensure at least 1 day
     
     # Convert to years
@@ -399,9 +403,9 @@ def get_option_by_delta(option_chain, spot_price, delta_target, option_type, exp
     
     return option
 
-def select_expiry_based_on_day(expiry_dates, current_date):
-    """Select appropriate expiry based on the day of the week"""
-    weekday = current_date.weekday()  # 0 = Monday, 1 = Tuesday, ..., 6 = Sunday
+def select_expiry_based_on_day(expiry_dates, current_date_ist):
+    """Select appropriate expiry based on the day of the week (IST date)"""
+    weekday = current_date_ist.weekday()  # 0 = Monday, 1 = Tuesday, ..., 6 = Sunday
     
     # Logic based on requirements:
     # Mon-Thu: Use next week expiry
@@ -413,8 +417,8 @@ def select_expiry_based_on_day(expiry_dates, current_date):
     else:  # Friday
         return expiry_dates[0]  # Current week expiry
 
-def check_exit_before_expiry(current_time, expiry_date):
-    """Check if we need to exit positions before expiry (16 min before)"""
+def check_exit_before_expiry(current_time_ist, expiry_date):
+    """Check if we need to exit positions before expiry (16 min before) - all in IST"""
     try:
         # Handle different date formats
         if isinstance(expiry_date, dict) and 'date' in expiry_date:
@@ -422,16 +426,16 @@ def check_exit_before_expiry(current_time, expiry_date):
             # Try different date formats
             try:
                 # Try DD-MM-YYYY format
-                expiry_dt = dt.from_format(expiry_str, 'DD-MM-YYYY')
+                expiry_dt = dt.from_format(expiry_str, 'DD-MM-YYYY', tz=time_zone)
             except:
                 try:
                     # Try YYYY-MM-DD format
-                    expiry_dt = dt.from_format(expiry_str, 'YYYY-MM-DD')
+                    expiry_dt = dt.from_format(expiry_str, 'YYYY-MM-DD', tz=time_zone)
                 except:
                     try:
                         # Try [DD-MM-YYYY] format (remove brackets)
                         clean_str = expiry_str.strip('[]')
-                        expiry_dt = dt.from_format(clean_str, 'DD-MM-YYYY')
+                        expiry_dt = dt.from_format(clean_str, 'DD-MM-YYYY', tz=time_zone)
                     except:
                         logging.error(f"Could not parse expiry date string: {expiry_str}")
                         return False
@@ -446,7 +450,7 @@ def check_exit_before_expiry(current_time, expiry_date):
         # Get time 16 minutes before expiry
         exit_time = expiry_dt.subtract(minutes=16)
         
-        return current_time >= exit_time
+        return current_time_ist >= exit_time
 
     except Exception as e:
         logging.error(f"Error in check_exit_before_expiry: {e}")
@@ -489,7 +493,7 @@ def get_current_option_price(fyers, symbol):
         return 0
 
 def log_trade_pair(trading_state, leg1_data, leg2_data, spot_price, trade_type="Entry", reason="Strategy"):
-    """Log both legs of a strategy with proper timestamps"""
+    """Log both legs of a strategy with proper timestamps (IST)"""
     base_time = dt.now(time_zone)
     
     # Log first leg
@@ -816,7 +820,7 @@ def cleanup_and_exit():
     print("Trading script stopped cleanly")
 
 
-# Modify the main() function
+# Fixed main() function with proper IST timezone handling
 def main():
     global STOP_TRADING
     
@@ -840,24 +844,28 @@ def main():
     if not trading_state:
         trading_state = initialize_trading_state()
     
-    # Get current time and define trading session times
-    current_time = dt.now(time_zone)
-    start_time = dt.datetime(current_time.year, current_time.month, current_time.day, start_hour, start_min, tz=time_zone)
-    end_time = dt.datetime(current_time.year, current_time.month, current_time.day, end_hour, end_min, tz=time_zone)
+    # Get current IST time and define trading session times in IST
+    current_time_ist = dt.now(time_zone)
     
-    print(f"Start time: {start_time}")
-    print(f"End time: {end_time}")
+    # Create start and end times in IST timezone
+    start_time_ist = current_time_ist.replace(hour=start_hour, minute=start_min, second=0, microsecond=0)
+    end_time_ist = current_time_ist.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
+    
+    print(f"Current IST time: {current_time_ist}")
+    print(f"Trading start time (IST): {start_time_ist}")
+    print(f"Trading end time (IST): {end_time_ist}")
     
     # If current time is before start time, wait until start time
-    if current_time < start_time:
-        wait_seconds = (start_time - current_time).total_seconds()
-        print(f"Waiting {wait_seconds/60:.1f} minutes until trading starts at {start_time}")
-        logging.info(f"Waiting {wait_seconds/60:.1f} minutes until trading starts at {start_time}")
+    if current_time_ist < start_time_ist:
+        wait_seconds = (start_time_ist - current_time_ist).total_seconds()
+        print(f"Waiting {wait_seconds/60:.1f} minutes until trading starts at {start_time_ist}")
+        logging.info(f"Waiting {wait_seconds/60:.1f} minutes until trading starts at {start_time_ist}")
         
         # Check for stop signal during wait
         while wait_seconds > 0 and not STOP_TRADING and not check_stop_signal():
             time.sleep(min(30, wait_seconds))  # Check every 30 seconds
-            wait_seconds -= 30
+            current_time_ist = dt.now(time_zone)  # Update current time
+            wait_seconds = (start_time_ist - current_time_ist).total_seconds()
             
         if STOP_TRADING:
             cleanup_and_exit()
@@ -865,20 +873,21 @@ def main():
     
     # Main trading loop with stop signal checking
     while not STOP_TRADING:
-        current_time = dt.now(time_zone)
+        current_time_ist = dt.now(time_zone)  # Always get current IST time
         
         # Check for stop signal
         if check_stop_signal():
             logging.info("Stop signal detected from file")
             break
         
-        # Exit if we're past end time
-        if current_time > end_time + dt.duration(minutes=2):
+        # Exit if we're past end time (with 2 minute buffer)
+        end_time_with_buffer = end_time_ist.add(minutes=2)
+        if current_time_ist > end_time_with_buffer:
             logging.info("Trading session ended. Positions maintained for next day.")
             break
         
         # Only trade during market hours
-        if start_time <= current_time <= end_time:
+        if start_time_ist <= current_time_ist <= end_time_ist:
             try:
                 # Your existing trading logic here...
                 # Get historical data
@@ -898,8 +907,8 @@ def main():
                     # Get current expiry dates
                     expiry_dates = get_current_expiry(fyers, ticker, strike_count)
                     
-                    # Select appropriate expiry based on day of week
-                    selected_expiry = select_expiry_based_on_day(expiry_dates, current_time)
+                    # Select appropriate expiry based on day of week (using IST date)
+                    selected_expiry = select_expiry_based_on_day(expiry_dates, current_time_ist.date())
                     
                     # Get option chain for the selected expiry
                     option_chain, spot_price = get_option_chain(fyers, ticker, strike_count, 
@@ -938,13 +947,14 @@ def main():
                     exit_sell_signal = (trading_state['position'] == 'short' and 
                                        current_supertrend_direction == 1)
                     
-                    # Check if we need to exit before expiry
+                    # Check if we need to exit before expiry (using IST time)
                     exit_for_expiry = (trading_state['position'] is not None and 
                                       trading_state['expiry'] is not None and
-                                      check_exit_before_expiry(current_time, trading_state['expiry']))
+                                      check_exit_before_expiry(current_time_ist, trading_state['expiry']))
                     
                     # Log current market conditions
-                    logging.info(f"Spot Price: {spot_price}, Supertrend: {'Green' if current_supertrend_direction == 1 else 'Red'}, "
+                    logging.info(f"IST Time: {current_time_ist}, Spot Price: {spot_price}, "
+                                f"Supertrend: {'Green' if current_supertrend_direction == 1 else 'Red'}, "
                                 f"{'Above' if above_ema else 'Below'} EMA")
                     
                     # Position entry and exit logic
@@ -971,9 +981,10 @@ def main():
                     # Save trading state
                     store_trading_data(trading_state, account_type)
                     
-                    # Save trades to CSV
+                    # Save trades to CSV with IST date
                     if not trading_state['trades'].empty:
-                        trading_state['trades'].to_csv(f'trades_{strategy_name}_{dt.now(time_zone).date()}.csv')
+                        csv_filename = f'trades_{strategy_name}_{current_time_ist.date()}.csv'
+                        trading_state['trades'].to_csv(csv_filename)
                 
             except Exception as e:
                 logging.error(f"Error in main loop: {e}")

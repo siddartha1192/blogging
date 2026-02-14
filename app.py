@@ -1,10 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_from_directory, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail, Message
 from datetime import datetime
 import markdown
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
+from authlib.integrations.flask_client import OAuth
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Load environment variables
 load_dotenv()
@@ -17,6 +22,27 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-testing')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///techblog.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# Email configuration for Gmail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'your-email@gmail.com')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'your-app-password')
+app.config['MAIL_DEFAULT_SENDER'] = ('TechBobbles', os.environ.get('MAIL_USERNAME', 'your-email@gmail.com'))
+mail = Mail(app)
+
+# Google OAuth configuration
+app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID', 'your-client-id')
+app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET', 'your-client-secret')
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=app.config['GOOGLE_CLIENT_ID'],
+    client_secret=app.config['GOOGLE_CLIENT_SECRET'],
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
 
 # Context processors
 @app.context_processor
@@ -63,9 +89,20 @@ class Topic(db.Model):
     name = db.Column(db.String(50), nullable=False)
     slug = db.Column(db.String(50), unique=True, nullable=False)
 
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    google_id = db.Column(db.String(100), unique=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    name = db.Column(db.String(100))
+    profile_pic = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Subscriber(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
     email = db.Column(db.String(255), unique=True, nullable=False)
+    phone = db.Column(db.String(20))
     subscribed_on = db.Column(db.DateTime, default=datetime.utcnow)
 
 # Association table for Post and Topic many-to-many relationship
@@ -73,6 +110,35 @@ post_topics = db.Table('post_topics',
     db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True),
     db.Column('topic_id', db.Integer, db.ForeignKey('topic.id'), primary_key=True)
 )
+
+# Helper function to send welcome email
+def send_welcome_email(email, name):
+    """Send a professional welcome email to new subscribers"""
+    try:
+        # Render the email template
+        html_body = render_template(
+            'emails/welcome.html',
+            name=name,
+            site_url=url_for('home', _external=True),
+            sender_email=app.config['MAIL_DEFAULT_SENDER'][1],
+            unsubscribe_url=url_for('home', _external=True),
+            privacy_url=url_for('home', _external=True)
+        )
+
+        # Create message
+        msg = Message(
+            subject='Welcome to TechBobbles - Your Tech Journey Starts Here! 🚀',
+            recipients=[email],
+            html=html_body
+        )
+
+        # Send email
+        mail.send(msg)
+        print(f"Welcome email sent successfully to {email}")
+        return True
+    except Exception as e:
+        print(f"Error sending email to {email}: {str(e)}")
+        return False
 
 # Routes
 @app.route('/')
@@ -90,13 +156,23 @@ def home():
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
     data = request.get_json()
-    email = data.get('email')
-    
+    email = data.get('email', '').strip()
+    name = data.get('name', '').strip()
+    phone = data.get('phone', '').strip()
+
     if not email:
-        # Return JSON error if it's an AJAX call
         if request.is_json:
-            return jsonify({'status': 'danger', 'message': 'Please provide a valid email.'}), 400
-        flash('Please provide a valid email.', 'danger')
+            return jsonify({'status': 'danger', 'message': 'Email address is required.'}), 400
+        flash('Email address is required.', 'danger')
+        return redirect(request.referrer or url_for('home'))
+
+    # Validate email format
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        if request.is_json:
+            return jsonify({'status': 'danger', 'message': 'Please provide a valid email address.'}), 400
+        flash('Please provide a valid email address.', 'danger')
         return redirect(request.referrer or url_for('home'))
 
     existing = Subscriber.query.filter_by(email=email).first()
@@ -105,12 +181,28 @@ def subscribe():
             return jsonify({'status': 'warning', 'message': 'You are already subscribed!'}), 200
         flash('You are already subscribed!', 'warning')
     else:
-        new_sub = Subscriber(email=email)
+        # Create new subscriber
+        new_sub = Subscriber(
+            email=email,
+            name=name if name else 'Valued Subscriber',
+            phone=phone if phone else None
+        )
         db.session.add(new_sub)
         db.session.commit()
+
+        # Send welcome email
+        try:
+            send_welcome_email(email, name if name else 'Valued Subscriber')
+        except Exception as e:
+            print(f"Failed to send welcome email: {str(e)}")
+            # Don't fail the subscription if email fails
+
         if request.is_json:
-            return jsonify({'status': 'success', 'message': 'Subscription successful!'}), 200
-        flash('Subscription successful!', 'success')
+            return jsonify({
+                'status': 'success',
+                'message': f'Welcome aboard, {name if name else "friend"}! Check your email for a special welcome message.'
+            }), 200
+        flash('Subscription successful! Check your email.', 'success')
 
     return redirect(request.referrer or url_for('home'))
 
@@ -164,6 +256,57 @@ def about():
 @app.route('/goals')
 def goals():
     return render_template('weekly_goals_calendar.html')
+
+# Google OAuth routes
+@app.route('/login')
+def login():
+    redirect_uri = url_for('authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/authorize')
+def authorize():
+    try:
+        token = google.authorize_access_token()
+        user_info = token.get('userinfo')
+
+        if user_info:
+            # Check if user exists
+            user = User.query.filter_by(email=user_info['email']).first()
+
+            if not user:
+                # Create new user
+                user = User(
+                    google_id=user_info.get('sub'),
+                    email=user_info['email'],
+                    name=user_info.get('name'),
+                    profile_pic=user_info.get('picture')
+                )
+                db.session.add(user)
+            else:
+                # Update last login
+                user.last_login = datetime.utcnow()
+
+            db.session.commit()
+
+            # Store user in session
+            session['user_id'] = user.id
+            session['user_name'] = user.name
+            session['user_email'] = user.email
+            session['user_picture'] = user.profile_pic
+
+            flash(f'Welcome back, {user.name}!', 'success')
+            return redirect(url_for('home'))
+    except Exception as e:
+        print(f"OAuth error: {str(e)}")
+        flash('Login failed. Please try again.', 'danger')
+
+    return redirect(url_for('home'))
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out successfully.', 'info')
+    return redirect(url_for('home'))
 
 # Helper function to initialize the database with sample data
 def init_db():

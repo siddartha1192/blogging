@@ -26,16 +26,34 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("newsletter-form");
     if (!form) return; // Exit if newsletter form doesn't exist
 
+    const nameInput = document.getElementById("subscriber-name");
     const emailInput = document.getElementById("subscriber-email");
+    const phoneInput = document.getElementById("subscriber-phone");
     const responseEl = document.getElementById("subscription-response");
     const postUrl = form.getAttribute("data-url");
 
     form.addEventListener("submit", async function (e) {
         e.preventDefault();
+
+        const name = nameInput ? nameInput.value.trim() : '';
         const email = emailInput.value.trim();
+        const phone = phoneInput ? phoneInput.value.trim() : '';
 
         if (!email) {
-            responseEl.innerHTML = `<div class="alert alert-warning">Please enter a valid email address.</div>`;
+            responseEl.innerHTML = `<div class="alert alert-warning alert-dismissible fade show">
+                Please enter a valid email address.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+            return;
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            responseEl.innerHTML = `<div class="alert alert-danger alert-dismissible fade show">
+                Please enter a valid email address.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
             return;
         }
 
@@ -51,7 +69,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    phone: phone
+                })
             });
 
             const result = await response.json();
@@ -60,13 +82,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>`;
 
-            // Clear input on success
+            // Clear inputs on success
             if (result.status === 'success') {
+                if (nameInput) nameInput.value = '';
                 emailInput.value = '';
+                if (phoneInput) phoneInput.value = '';
+
+                // Scroll to response message
+                responseEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         } catch (err) {
             responseEl.innerHTML = `<div class="alert alert-danger alert-dismissible fade show">
-                An error occurred. Please try again.
+                An error occurred. Please try again later.
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>`;
         } finally {

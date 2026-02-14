@@ -140,15 +140,31 @@
                     <h2 class="mb-2 fw-bold fs-4" style="color: #1a237e;">Stay Updated with Tech Insights</h2>
                     <p class="mb-3 small text-muted">Get the latest tech news and tutorials delivered to your inbox!</p>
                     <form id="newsletter-form" class="newsletter-form-modern" data-url="{{ url_for('subscribe') }}">
-                        <div class="input-group-modern mb-2">
-                            <i class="bi bi-envelope input-icon"></i>
-                            <input type="email" id="subscriber-email" class="form-control-modern" placeholder="Enter your email address" required>
-                            <button class="btn-subscribe" type="submit">
-                                <span>Subscribe</span>
-                                <i class="bi bi-arrow-right"></i>
-                            </button>
+                        <!-- Name Field -->
+                        <div class="input-group-modern-single mb-2">
+                            <i class="bi bi-person input-icon-single"></i>
+                            <input type="text" id="subscriber-name" class="form-control-modern-single" placeholder="Your Name (Optional)">
                         </div>
-                        <div class="form-text text-muted" style="font-size: 0.75rem;">
+
+                        <!-- Email Field (Required) -->
+                        <div class="input-group-modern-single mb-2">
+                            <i class="bi bi-envelope input-icon-single"></i>
+                            <input type="email" id="subscriber-email" class="form-control-modern-single" placeholder="Your Email Address *" required>
+                        </div>
+
+                        <!-- Phone Field -->
+                        <div class="input-group-modern-single mb-2">
+                            <i class="bi bi-telephone input-icon-single"></i>
+                            <input type="tel" id="subscriber-phone" class="form-control-modern-single" placeholder="Phone Number (Optional)">
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button class="btn-subscribe-full" type="submit">
+                            <span>Subscribe to Newsletter</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+
+                        <div class="form-text text-muted" style="font-size: 0.75rem; margin-top: 0.5rem;">
                             <i class="bi bi-shield-check"></i> We respect your privacy. Unsubscribe anytime.
                         </div>
                         <div id="subscription-response" class="mt-2"></div>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to TechBobbles</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fa;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            margin: 10px 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 24px;
+            color: #1a237e;
+            margin: 0 0 20px;
+            font-weight: 600;
+        }
+        .message {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #4a5568;
+            margin-bottom: 30px;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f1f8e9 100%);
+            border-left: 4px solid #2c5364;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        .highlight-box h3 {
+            margin: 0 0 10px;
+            color: #1a237e;
+            font-size: 18px;
+        }
+        .highlight-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .highlight-box li {
+            margin: 8px 0;
+            color: #4a5568;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #718096;
+        }
+        .footer a {
+            color: #2c5364;
+            text-decoration: none;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #2c5364;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #cbd5e0, transparent);
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 Welcome to TechBobbles!</h1>
+            <p>Your Gateway to the Latest in Technology</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <h2 class="greeting">Hi {{ name }},</h2>
+
+            <p class="message">
+                Thank you for subscribing to <strong>TechBobbles</strong>! We're thrilled to have you join our community of tech enthusiasts, innovators, and early adopters.
+            </p>
+
+            <p class="message">
+                You've just taken the first step towards staying ahead of the curve with cutting-edge insights, in-depth tutorials, and breaking news from the world of technology.
+            </p>
+
+            <div class="highlight-box">
+                <h3>📬 Here's What You Can Expect:</h3>
+                <ul>
+                    <li><strong>Weekly Tech Digest:</strong> Curated articles on AI, blockchain, automation, and more</li>
+                    <li><strong>Exclusive Insights:</strong> Industry analysis and expert opinions</li>
+                    <li><strong>How-To Guides:</strong> Practical tutorials to boost your tech skills</li>
+                    <li><strong>Early Access:</strong> Be the first to know about major tech announcements</li>
+                </ul>
+            </div>
+
+            <p class="message">
+                Our mission is to make technology accessible, understandable, and actionable for everyone—from beginners to seasoned professionals.
+            </p>
+
+            <div style="text-align: center;">
+                <a href="{{ site_url }}" class="cta-button">
+                    Explore TechBobbles →
+                </a>
+            </div>
+
+            <div class="divider"></div>
+
+            <p class="message" style="font-size: 14px; color: #718096;">
+                <strong>Pro Tip:</strong> Add <em>{{ sender_email }}</em> to your contacts to ensure our emails land in your inbox, not your spam folder.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p style="font-weight: 600; color: #2c5364; margin-bottom: 15px;">Stay Connected</p>
+            <div class="social-links">
+                <a href="#">Twitter</a> •
+                <a href="#">LinkedIn</a> •
+                <a href="#">GitHub</a> •
+                <a href="#">Facebook</a>
+            </div>
+
+            <div class="divider" style="margin: 20px auto; max-width: 200px;"></div>
+
+            <p>&copy; 2026 TechBobbles. All rights reserved.</p>
+            <p>
+                <a href="{{ unsubscribe_url }}">Unsubscribe</a> |
+                <a href="{{ privacy_url }}">Privacy Policy</a>
+            </p>
+            <p style="margin-top: 15px; font-size: 12px;">
+                You're receiving this email because you subscribed to TechBobbles newsletter.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

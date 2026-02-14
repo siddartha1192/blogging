@@ -161,6 +161,10 @@ def topic(slug):
 def about():
     return render_template('about.html')
 
+@app.route('/goals')
+def goals():
+    return render_template('weekly_goals_calendar.html')
+
 # Helper function to initialize the database with sample data
 def init_db():
     with app.app_context():

@@ -360,7 +360,7 @@ a:hover {
 }
 
 .newsletter-icon {
-  font-size: 3.5rem;
+  font-size: 2.5rem;
   color: #2c5364;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -450,19 +450,18 @@ a:hover {
 }
 
 .newsletter-stats {
-  padding-top: 1.75rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  /* Padding and border moved inline for better control */
 }
 
 .stat-number {
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #2c5364;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;

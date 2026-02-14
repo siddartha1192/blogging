@@ -18,3 +18,12 @@ instance/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Environment variables
+.env
+.flaskenv
+
+# Virtual environment
+venv/
+env/
+ENV/

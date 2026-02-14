@@ -68,6 +68,45 @@
         border-radius: 8px;
         border: 2px solid #e9ecef;
     }
+
+    .editor-toggle {
+        display: flex;
+        gap: 0;
+        margin-bottom: 15px;
+    }
+
+    .editor-toggle .btn {
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: 14px;
+        border-radius: 0;
+    }
+
+    .editor-toggle .btn:first-child {
+        border-radius: 8px 0 0 8px;
+    }
+
+    .editor-toggle .btn:last-child {
+        border-radius: 0 8px 8px 0;
+    }
+
+    .editor-toggle .btn.active {
+        background: #2c5364;
+        color: white;
+        border-color: #2c5364;
+    }
+
+    #htmlContent {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 15px;
+        resize: vertical;
+    }
 </style>
 {% endblock %}
 
@@ -105,10 +144,24 @@
         <div class="form-section">
             <h3 class="form-section-title"><i class="bi bi-file-text me-2"></i>Post Content</h3>
 
-            <div class="mb-3">
-                <label for="content" class="form-label">Content *</label>
+            <div class="editor-toggle">
+                <button type="button" class="btn btn-outline-secondary active" id="btnVisualEditor" onclick="switchEditor('visual')">
+                    <i class="bi bi-easel me-1"></i>Visual Editor
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="btnHtmlEditor" onclick="switchEditor('html')">
+                    <i class="bi bi-code-slash me-1"></i>HTML Code
+                </button>
+            </div>
+
+            <div class="mb-3" id="visualEditorWrap">
                 <textarea id="content" name="content">{{ post.content }}</textarea>
             </div>
+            <div class="mb-3" id="htmlEditorWrap" style="display:none;">
+                <textarea id="htmlContent" class="form-control" rows="20"
+                          placeholder="Paste your raw HTML here. It will be saved directly without any processing."></textarea>
+                <small class="text-muted mt-1 d-block">Your HTML will be saved directly to the database without any modification.</small>
+            </div>
+            <input type="hidden" id="editorMode" name="editor_mode" value="visual">
         </div>
 
         <!-- Categories & Metadata -->
@@ -200,43 +253,85 @@
 <!-- TinyMCE Rich Text Editor -->
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
+    var currentMode = 'visual';
+
     // Initialize TinyMCE
-    tinymce.init({
-        selector: '#content',
-        height: 500,
-        menubar: true,
-        plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'codesample'
-        ],
-        toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
-                 'alignleft aligncenter alignright alignjustify | ' +
-                 'bullist numlist outdent indent | ' +
-                 'link image media codesample | ' +
-                 'forecolor backcolor | removeformat | help',
-        content_style: 'body { font-family:Inter,Arial,sans-serif; font-size:16px; line-height:1.8; }',
-        images_upload_url: '/admin/upload-image',
-        automatic_uploads: true,
-        image_advtab: true,
-        link_default_target: '_blank',
-        codesample_languages: [
-            {text: 'Python', value: 'python'},
-            {text: 'JavaScript', value: 'javascript'},
-            {text: 'HTML/XML', value: 'markup'},
-            {text: 'CSS', value: 'css'},
-            {text: 'PHP', value: 'php'},
-            {text: 'Ruby', value: 'ruby'},
-            {text: 'Java', value: 'java'},
-            {text: 'C', value: 'c'},
-            {text: 'C++', value: 'cpp'},
-            {text: 'C#', value: 'csharp'},
-            {text: 'Go', value: 'go'},
-            {text: 'Rust', value: 'rust'},
-            {text: 'SQL', value: 'sql'},
-            {text: 'Bash', value: 'bash'}
-        ]
-    });
+    function initTinyMCE() {
+        tinymce.init({
+            selector: '#content',
+            height: 500,
+            menubar: true,
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'codesample'
+            ],
+            toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
+                     'alignleft aligncenter alignright alignjustify | ' +
+                     'bullist numlist outdent indent | ' +
+                     'link image media codesample | ' +
+                     'forecolor backcolor | removeformat | help',
+            content_style: 'body { font-family:Inter,Arial,sans-serif; font-size:16px; line-height:1.8; }',
+            images_upload_url: '/admin/upload-image',
+            automatic_uploads: true,
+            image_advtab: true,
+            link_default_target: '_blank',
+            codesample_languages: [
+                {text: 'Python', value: 'python'},
+                {text: 'JavaScript', value: 'javascript'},
+                {text: 'HTML/XML', value: 'markup'},
+                {text: 'CSS', value: 'css'},
+                {text: 'PHP', value: 'php'},
+                {text: 'Ruby', value: 'ruby'},
+                {text: 'Java', value: 'java'},
+                {text: 'C', value: 'c'},
+                {text: 'C++', value: 'cpp'},
+                {text: 'C#', value: 'csharp'},
+                {text: 'Go', value: 'go'},
+                {text: 'Rust', value: 'rust'},
+                {text: 'SQL', value: 'sql'},
+                {text: 'Bash', value: 'bash'}
+            ]
+        });
+    }
+
+    initTinyMCE();
+
+    // Switch between Visual Editor and HTML Code mode
+    function switchEditor(mode) {
+        var btnVisual = document.getElementById('btnVisualEditor');
+        var btnHtml = document.getElementById('btnHtmlEditor');
+        var visualWrap = document.getElementById('visualEditorWrap');
+        var htmlWrap = document.getElementById('htmlEditorWrap');
+        var htmlTextarea = document.getElementById('htmlContent');
+        var editorMode = document.getElementById('editorMode');
+
+        if (mode === 'html') {
+            // Transfer content from TinyMCE to HTML textarea
+            var editor = tinymce.get('content');
+            if (editor) {
+                htmlTextarea.value = editor.getContent();
+                editor.remove();
+            }
+            visualWrap.style.display = 'none';
+            htmlWrap.style.display = 'block';
+            btnVisual.classList.remove('active');
+            btnHtml.classList.add('active');
+            editorMode.value = 'html';
+            currentMode = 'html';
+        } else {
+            // Transfer content from HTML textarea back to TinyMCE
+            var textarea = document.getElementById('content');
+            textarea.value = htmlTextarea.value;
+            visualWrap.style.display = 'block';
+            htmlWrap.style.display = 'none';
+            btnVisual.classList.add('active');
+            btnHtml.classList.remove('active');
+            editorMode.value = 'visual';
+            currentMode = 'visual';
+            initTinyMCE();
+        }
+    }
 
     // Auto-generate slug from title
     document.getElementById('title').addEventListener('input', function() {
@@ -247,9 +342,19 @@
         document.getElementById('slug').value = slug;
     });
 
-    // Form validation before submit
+    // Form validation & sync before submit
     document.getElementById('postForm').addEventListener('submit', function(e) {
-        const content = tinymce.get('content').getContent();
+        var content = '';
+        if (currentMode === 'html') {
+            // In HTML mode, copy HTML textarea value into the real content field
+            content = document.getElementById('htmlContent').value;
+            document.getElementById('content').value = content;
+        } else {
+            var editor = tinymce.get('content');
+            if (editor) {
+                content = editor.getContent();
+            }
+        }
         if (!content || content.trim() === '') {
             e.preventDefault();
             alert('Please add content to your post before saving.');

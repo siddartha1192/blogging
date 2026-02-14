@@ -5,6 +5,7 @@ from datetime import datetime
 import markdown
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
 import smtplib
@@ -21,6 +22,17 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-testing')
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///techblog.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Upload configuration
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 db = SQLAlchemy(app)
 
 # Email configuration for Gmail
@@ -280,10 +292,15 @@ def category(slug):
 @app.route('/post/<slug>')
 def post(slug):
     post = Post.query.filter_by(slug=slug).first_or_404()
-    post.content_html = markdown.markdown(post.content)
+    # If content already contains HTML tags (from TinyMCE), use it directly;
+    # otherwise fall back to markdown conversion for legacy plain-text posts.
+    if '<p>' in post.content or '<div>' in post.content or '<h' in post.content:
+        post.content_html = post.content
+    else:
+        post.content_html = markdown.markdown(post.content)
     trending_topics = Topic.query.limit(8).all()
-    return render_template('post.html', 
-                           post=post, 
+    return render_template('post.html',
+                           post=post,
                            trending_topics=trending_topics)
 
 
@@ -443,6 +460,16 @@ def admin_create_post():
         featured_image = request.form.get('featured_image')
         publish_now = request.form.get('publish_now') == 'on'
 
+        # Handle image upload
+        if 'featured_image_file' in request.files:
+            file = request.files['featured_image_file']
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+                filename = f"{timestamp}_{filename}"
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                featured_image = f"/static/uploads/{filename}"
+
         # Create new post
         new_post = Post(
             title=title,
@@ -470,6 +497,74 @@ def admin_create_post():
     categories = Category.query.all()
     authors = Author.query.all()
     return render_template('admin/create_post.html', categories=categories, authors=authors)
+
+@app.route('/admin/edit-post/<int:post_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_edit_post(post_id):
+    post = Post.query.get_or_404(post_id)
+
+    if request.method == 'POST':
+        post.title = request.form.get('title')
+        post.slug = request.form.get('slug')
+        post.excerpt = request.form.get('excerpt')
+        post.content = request.form.get('content')
+        post.category_id = request.form.get('category_id')
+        post.author_id = request.form.get('author_id')
+        post.read_time = request.form.get('read_time', 5)
+        post.featured = request.form.get('featured') == 'on'
+
+        # Handle image upload
+        if 'featured_image_file' in request.files:
+            file = request.files['featured_image_file']
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+                filename = f"{timestamp}_{filename}"
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                post.featured_image = f"/static/uploads/{filename}"
+
+        # Only update from URL field if no file was uploaded and URL field has a value
+        featured_image_url = request.form.get('featured_image')
+        if featured_image_url and not (request.files.get('featured_image_file') and request.files['featured_image_file'].filename):
+            post.featured_image = featured_image_url
+
+        db.session.commit()
+        flash(f'Post "{post.title}" updated successfully!', 'success')
+        return redirect(url_for('admin_posts'))
+
+    categories = Category.query.all()
+    authors = Author.query.all()
+    return render_template('admin/edit_post.html', post=post, categories=categories, authors=authors)
+
+@app.route('/admin/delete-post/<int:post_id>', methods=['POST'])
+@admin_required
+def admin_delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    title = post.title
+    db.session.delete(post)
+    db.session.commit()
+    flash(f'Post "{title}" deleted successfully!', 'success')
+    return redirect(url_for('admin_posts'))
+
+@app.route('/admin/upload-image', methods=['POST'])
+@admin_required
+def admin_upload_image():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+        filename = f"{timestamp}_{filename}"
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        file_url = f"/static/uploads/{filename}"
+        return jsonify({'location': file_url})
+
+    return jsonify({'error': 'File type not allowed'}), 400
 
 # Helper function to initialize the database with sample data
 def init_db():

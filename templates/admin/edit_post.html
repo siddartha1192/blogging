@@ -1,7 +1,7 @@
 {% extends 'admin/base.html' %}
 
-{% block title %}Create New Post | Admin Panel{% endblock %}
-{% block page_title %}Create New Blog Post{% endblock %}
+{% block title %}Edit Post | Admin Panel{% endblock %}
+{% block page_title %}Edit Blog Post{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -60,12 +60,20 @@
         font-weight: 600;
         font-size: 16px;
     }
+
+    .current-image {
+        max-width: 200px;
+        max-height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+    }
 </style>
 {% endblock %}
 
 {% block admin_content %}
 <div class="form-card">
-    <form method="POST" action="{{ url_for('admin_create_post') }}" id="postForm" enctype="multipart/form-data">
+    <form method="POST" action="{{ url_for('admin_edit_post', post_id=post.id) }}" id="postForm" enctype="multipart/form-data">
         <!-- Basic Information -->
         <div class="form-section">
             <h3 class="form-section-title"><i class="bi bi-info-circle me-2"></i>Basic Information</h3>
@@ -74,13 +82,13 @@
                 <div class="col-md-8 mb-3">
                     <label for="title" class="form-label">Post Title *</label>
                     <input type="text" class="form-control" id="title" name="title" required
-                           placeholder="Enter an engaging title for your post">
+                           value="{{ post.title }}" placeholder="Enter an engaging title for your post">
                 </div>
 
                 <div class="col-md-4 mb-3">
                     <label for="slug" class="form-label">URL Slug *</label>
                     <input type="text" class="form-control" id="slug" name="slug" required
-                           placeholder="post-url-slug">
+                           value="{{ post.slug }}" placeholder="post-url-slug">
                     <small class="text-muted">Auto-generated from title</small>
                 </div>
             </div>
@@ -88,7 +96,7 @@
             <div class="mb-3">
                 <label for="excerpt" class="form-label">Excerpt *</label>
                 <textarea class="form-control" id="excerpt" name="excerpt" rows="3" required
-                          placeholder="Brief summary that appears in listings and social media"></textarea>
+                          placeholder="Brief summary that appears in listings and social media">{{ post.excerpt }}</textarea>
                 <small class="text-muted">Recommended: 120-160 characters</small>
             </div>
         </div>
@@ -99,7 +107,7 @@
 
             <div class="mb-3">
                 <label for="content" class="form-label">Content *</label>
-                <textarea id="content" name="content"></textarea>
+                <textarea id="content" name="content">{{ post.content }}</textarea>
             </div>
         </div>
 
@@ -113,7 +121,7 @@
                     <select class="form-select" id="category_id" name="category_id" required>
                         <option value="">Select Category</option>
                         {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        <option value="{{ category.id }}" {% if category.id == post.category_id %}selected{% endif %}>{{ category.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -123,19 +131,30 @@
                     <select class="form-select" id="author_id" name="author_id" required>
                         <option value="">Select Author</option>
                         {% for author in authors %}
-                        <option value="{{ author.id }}">{{ author.name }}</option>
+                        <option value="{{ author.id }}" {% if author.id == post.author_id %}selected{% endif %}>{{ author.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <div class="col-md-4 mb-3">
                     <label for="read_time" class="form-label">Read Time (minutes)</label>
-                    <input type="number" class="form-control" id="read_time" name="read_time" value="5" min="1">
+                    <input type="number" class="form-control" id="read_time" name="read_time" value="{{ post.read_time }}" min="1">
                 </div>
             </div>
 
             <div class="mb-3">
-                <label for="featured_image_file" class="form-label">Featured Image</label>
+                <label class="form-label">Current Featured Image</label>
+                {% if post.featured_image %}
+                <div class="mb-2">
+                    <img src="{{ post.featured_image }}" alt="Current featured image" class="current-image">
+                </div>
+                {% else %}
+                <p class="text-muted">No featured image set</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="featured_image_file" class="form-label">Upload New Featured Image</label>
                 <input type="file" class="form-control mb-2" id="featured_image_file" name="featured_image_file"
                        accept="image/*">
                 <small class="text-muted">Upload an image (PNG, JPG, GIF, WebP, SVG - max 16MB)</small>
@@ -143,7 +162,7 @@
             <div class="mb-3">
                 <label for="featured_image" class="form-label">Or enter Image URL</label>
                 <input type="text" class="form-control" id="featured_image" name="featured_image"
-                       placeholder="/static/images/posts/image.jpg">
+                       value="{{ post.featured_image or '' }}" placeholder="/static/images/posts/image.jpg">
                 <small class="text-muted">Alternatively, enter a URL path to your featured image</small>
             </div>
         </div>
@@ -154,20 +173,11 @@
 
             <div class="custom-checkbox">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="featured" name="featured">
+                    <input class="form-check-input" type="checkbox" id="featured" name="featured"
+                           {% if post.featured %}checked{% endif %}>
                     <label class="form-check-label" for="featured">
                         <strong>Feature this post</strong>
                         <small class="d-block text-muted">Featured posts appear in the homepage carousel</small>
-                    </label>
-                </div>
-            </div>
-
-            <div class="custom-checkbox">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="publish_now" name="publish_now" checked>
-                    <label class="form-check-label" for="publish_now">
-                        <strong>Publish immediately and notify subscribers</strong>
-                        <small class="d-block text-muted">Email notifications will be sent to all subscribers</small>
                     </label>
                 </div>
             </div>
@@ -179,7 +189,7 @@
                 <i class="bi bi-x-circle me-2"></i>Cancel
             </a>
             <button type="submit" class="btn btn-primary btn-publish">
-                <i class="bi bi-check-circle me-2"></i>Publish Post
+                <i class="bi bi-check-circle me-2"></i>Update Post
             </button>
         </div>
     </form>
@@ -242,7 +252,7 @@
         const content = tinymce.get('content').getContent();
         if (!content || content.trim() === '') {
             e.preventDefault();
-            alert('Please add content to your post before publishing.');
+            alert('Please add content to your post before saving.');
             return false;
         }
     });

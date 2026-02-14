@@ -105,6 +105,14 @@ class Subscriber(db.Model):
     phone = db.Column(db.String(20))
     subscribed_on = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
+
 # Association table for Post and Topic many-to-many relationship
 post_topics = db.Table('post_topics',
     db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True),
@@ -138,6 +146,53 @@ def send_welcome_email(email, name):
         return True
     except Exception as e:
         print(f"Error sending email to {email}: {str(e)}")
+        return False
+
+# Helper function to send new post notification to all subscribers
+def send_new_post_notification(post):
+    """Send email notification to all subscribers about new blog post"""
+    try:
+        subscribers = Subscriber.query.all()
+
+        if not subscribers:
+            print("No subscribers to notify")
+            return True
+
+        # Send email to each subscriber
+        success_count = 0
+        for subscriber in subscribers:
+            try:
+                html_body = render_template(
+                    'emails/new_post.html',
+                    name=subscriber.name or 'Valued Reader',
+                    post_title=post.title,
+                    post_excerpt=post.excerpt,
+                    post_url=url_for('post', slug=post.slug, _external=True),
+                    post_image=post.featured_image,
+                    category_name=post.category.name,
+                    category_color=post.category.color,
+                    author_name=post.author.name,
+                    read_time=post.read_time,
+                    site_url=url_for('home', _external=True),
+                    unsubscribe_url=url_for('home', _external=True)
+                )
+
+                msg = Message(
+                    subject=f'New Post: {post.title} | TechBobbles',
+                    recipients=[subscriber.email],
+                    html=html_body
+                )
+
+                mail.send(msg)
+                success_count += 1
+            except Exception as e:
+                print(f"Failed to send email to {subscriber.email}: {str(e)}")
+                continue
+
+        print(f"Sent new post notification to {success_count}/{len(subscribers)} subscribers")
+        return True
+    except Exception as e:
+        print(f"Error sending new post notifications: {str(e)}")
         return False
 
 # Routes
@@ -307,6 +362,114 @@ def logout():
     session.clear()
     flash('You have been logged out successfully.', 'info')
     return redirect(url_for('home'))
+
+# Admin authentication decorator
+from functools import wraps
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'admin_id' not in session:
+            flash('Please log in as admin to access this page.', 'danger')
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Admin routes
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if 'admin_id' in session:
+        return redirect(url_for('admin_dashboard'))
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        admin = Admin.query.filter_by(username=username).first()
+
+        if admin and check_password_hash(admin.password_hash, password):
+            session['admin_id'] = admin.id
+            session['admin_username'] = admin.username
+            admin.last_login = datetime.utcnow()
+            db.session.commit()
+            flash(f'Welcome back, {admin.username}!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid username or password.', 'danger')
+
+    return render_template('admin/login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_id', None)
+    session.pop('admin_username', None)
+    flash('You have been logged out from admin panel.', 'info')
+    return redirect(url_for('home'))
+
+@app.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    total_posts = Post.query.count()
+    total_subscribers = Subscriber.query.count()
+    total_categories = Category.query.count()
+    recent_posts = Post.query.order_by(Post.publish_date.desc()).limit(5).all()
+    recent_subscribers = Subscriber.query.order_by(Subscriber.subscribed_on.desc()).limit(5).all()
+
+    return render_template('admin/dashboard.html',
+                         total_posts=total_posts,
+                         total_subscribers=total_subscribers,
+                         total_categories=total_categories,
+                         recent_posts=recent_posts,
+                         recent_subscribers=recent_subscribers)
+
+@app.route('/admin/posts')
+@admin_required
+def admin_posts():
+    posts = Post.query.order_by(Post.publish_date.desc()).all()
+    return render_template('admin/posts.html', posts=posts)
+
+@app.route('/admin/create-post', methods=['GET', 'POST'])
+@admin_required
+def admin_create_post():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        slug = request.form.get('slug')
+        excerpt = request.form.get('excerpt')
+        content = request.form.get('content')
+        category_id = request.form.get('category_id')
+        author_id = request.form.get('author_id')
+        read_time = request.form.get('read_time', 5)
+        featured = request.form.get('featured') == 'on'
+        featured_image = request.form.get('featured_image')
+        publish_now = request.form.get('publish_now') == 'on'
+
+        # Create new post
+        new_post = Post(
+            title=title,
+            slug=slug,
+            excerpt=excerpt,
+            content=content,
+            category_id=category_id,
+            author_id=author_id,
+            read_time=read_time,
+            featured=featured,
+            featured_image=featured_image,
+            publish_date=datetime.utcnow() if publish_now else datetime.utcnow()
+        )
+
+        db.session.add(new_post)
+        db.session.commit()
+
+        # Send email to all subscribers if publishing now
+        if publish_now:
+            send_new_post_notification(new_post)
+
+        flash(f'Post "{title}" created successfully!', 'success')
+        return redirect(url_for('admin_posts'))
+
+    categories = Category.query.all()
+    authors = Author.query.all()
+    return render_template('admin/create_post.html', categories=categories, authors=authors)
 
 # Helper function to initialize the database with sample data
 def init_db():

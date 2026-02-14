@@ -1,0 +1,242 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Create New Post | Admin Panel{% endblock %}
+{% block page_title %}Create New Blog Post{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .form-section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #2c5364;
+    }
+
+    .custom-checkbox {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 200px;
+        margin-top: 10px;
+        border-radius: 8px;
+    }
+
+    .btn-publish {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        border: none;
+        padding: 12px 40px;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .btn-save-draft {
+        background: linear-gradient(135deg, #607D8B 0%, #455A64 100%);
+        border: none;
+        padding: 12px 40px;
+        font-weight: 600;
+        font-size: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="form-card">
+    <form method="POST" action="{{ url_for('admin_create_post') }}" id="postForm">
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h3 class="form-section-title"><i class="bi bi-info-circle me-2"></i>Basic Information</h3>
+
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label for="title" class="form-label">Post Title *</label>
+                    <input type="text" class="form-control" id="title" name="title" required
+                           placeholder="Enter an engaging title for your post">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="slug" class="form-label">URL Slug *</label>
+                    <input type="text" class="form-control" id="slug" name="slug" required
+                           placeholder="post-url-slug">
+                    <small class="text-muted">Auto-generated from title</small>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="excerpt" class="form-label">Excerpt *</label>
+                <textarea class="form-control" id="excerpt" name="excerpt" rows="3" required
+                          placeholder="Brief summary that appears in listings and social media"></textarea>
+                <small class="text-muted">Recommended: 120-160 characters</small>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="form-section">
+            <h3 class="form-section-title"><i class="bi bi-file-text me-2"></i>Post Content</h3>
+
+            <div class="mb-3">
+                <label for="content" class="form-label">Content *</label>
+                <textarea id="content" name="content"></textarea>
+            </div>
+        </div>
+
+        <!-- Categories & Metadata -->
+        <div class="form-section">
+            <h3 class="form-section-title"><i class="bi bi-tags me-2"></i>Categories & Metadata</h3>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="category_id" class="form-label">Category *</label>
+                    <select class="form-select" id="category_id" name="category_id" required>
+                        <option value="">Select Category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="author_id" class="form-label">Author *</label>
+                    <select class="form-select" id="author_id" name="author_id" required>
+                        <option value="">Select Author</option>
+                        {% for author in authors %}
+                        <option value="{{ author.id }}">{{ author.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="read_time" class="form-label">Read Time (minutes)</label>
+                    <input type="number" class="form-control" id="read_time" name="read_time" value="5" min="1">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="featured_image" class="form-label">Featured Image URL</label>
+                <input type="text" class="form-control" id="featured_image" name="featured_image"
+                       placeholder="/static/images/posts/image.jpg">
+                <small class="text-muted">Enter the path to your featured image</small>
+            </div>
+        </div>
+
+        <!-- Publishing Options -->
+        <div class="form-section">
+            <h3 class="form-section-title"><i class="bi bi-send me-2"></i>Publishing Options</h3>
+
+            <div class="custom-checkbox">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="featured" name="featured">
+                    <label class="form-check-label" for="featured">
+                        <strong>Feature this post</strong>
+                        <small class="d-block text-muted">Featured posts appear in the homepage carousel</small>
+                    </label>
+                </div>
+            </div>
+
+            <div class="custom-checkbox">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="publish_now" name="publish_now" checked>
+                    <label class="form-check-label" for="publish_now">
+                        <strong>Publish immediately and notify subscribers</strong>
+                        <small class="d-block text-muted">Email notifications will be sent to all subscribers</small>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-3 justify-content-end">
+            <a href="{{ url_for('admin_posts') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-2"></i>Cancel
+            </a>
+            <button type="submit" class="btn btn-primary btn-publish">
+                <i class="bi bi-check-circle me-2"></i>Publish Post
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- TinyMCE Rich Text Editor -->
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    // Initialize TinyMCE
+    tinymce.init({
+        selector: '#content',
+        height: 500,
+        menubar: true,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'codesample'
+        ],
+        toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
+                 'alignleft aligncenter alignright alignjustify | ' +
+                 'bullist numlist outdent indent | ' +
+                 'link image media codesample | ' +
+                 'forecolor backcolor | removeformat | help',
+        content_style: 'body { font-family:Inter,Arial,sans-serif; font-size:16px; line-height:1.8; }',
+        image_advtab: true,
+        link_default_target: '_blank',
+        codesample_languages: [
+            {text: 'Python', value: 'python'},
+            {text: 'JavaScript', value: 'javascript'},
+            {text: 'HTML/XML', value: 'markup'},
+            {text: 'CSS', value: 'css'},
+            {text: 'PHP', value: 'php'},
+            {text: 'Ruby', value: 'ruby'},
+            {text: 'Java', value: 'java'},
+            {text: 'C', value: 'c'},
+            {text: 'C++', value: 'cpp'},
+            {text: 'C#', value: 'csharp'},
+            {text: 'Go', value: 'go'},
+            {text: 'Rust', value: 'rust'},
+            {text: 'SQL', value: 'sql'},
+            {text: 'Bash', value: 'bash'}
+        ]
+    });
+
+    // Auto-generate slug from title
+    document.getElementById('title').addEventListener('input', function() {
+        const title = this.value;
+        const slug = title.toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        document.getElementById('slug').value = slug;
+    });
+
+    // Form validation before submit
+    document.getElementById('postForm').addEventListener('submit', function(e) {
+        const content = tinymce.get('content').getContent();
+        if (!content || content.trim() === '') {
+            e.preventDefault();
+            alert('Please add content to your post before publishing.');
+            return false;
+        }
+    });
+</script>
+{% endblock %}

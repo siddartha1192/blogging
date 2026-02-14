@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Post: {{ post_title }}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fa;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            padding: 30px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 10px 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .post-title {
+            font-size: 28px;
+            color: #1a237e;
+            margin: 15px 0;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0 25px;
+            font-size: 14px;
+            color: #666;
+        }
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .featured-image {
+            width: 100%;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+        .excerpt {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #4a5568;
+            margin: 20px 0 30px;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #cbd5e0, transparent);
+            margin: 30px 0;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #718096;
+        }
+        .footer a {
+            color: #2c5364;
+            text-decoration: none;
+        }
+        .highlight-box {
+            background: #f0f4f8;
+            border-left: 4px solid #2c5364;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .highlight-box p {
+            margin: 0;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📢 New Post Published!</h1>
+            <p>Fresh content from TechBobbles</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+                Hi {{ name }},
+            </p>
+
+            <p style="font-size: 16px; color: #4a5568;">
+                We just published a new article that we think you'll love. Check it out!
+            </p>
+
+            <div class="divider"></div>
+
+            <!-- Post Badge -->
+            <span class="badge" style="background-color: {{ category_color }};">
+                {{ category_name }}
+            </span>
+
+            <!-- Post Title -->
+            <h2 class="post-title">{{ post_title }}</h2>
+
+            <!-- Post Meta -->
+            <div class="post-meta">
+                <span>
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                    </svg>
+                    By {{ author_name }}
+                </span>
+                <span>
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                    </svg>
+                    {{ read_time }} min read
+                </span>
+            </div>
+
+            <!-- Featured Image (if available) -->
+            {% if post_image %}
+            <img src="{{ post_image }}" alt="{{ post_title }}" class="featured-image">
+            {% endif %}
+
+            <!-- Post Excerpt -->
+            <div class="excerpt">
+                {{ post_excerpt }}
+            </div>
+
+            <!-- CTA Button -->
+            <div class="button-container">
+                <a href="{{ post_url }}" class="cta-button">
+                    Read Full Article →
+                </a>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Highlight Box -->
+            <div class="highlight-box">
+                <p>
+                    <strong>💡 Why you'll love this:</strong><br>
+                    This article is packed with insights, tips, and actionable information to keep you ahead in the tech world.
+                </p>
+            </div>
+
+            <p style="font-size: 14px; color: #718096; margin-top: 30px;">
+                Thanks for being a valued subscriber. We appreciate your continued support!
+            </p>
+
+            <p style="font-size: 14px; color: #718096;">
+                Best regards,<br>
+                <strong>The TechBobbles Team</strong>
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p style="font-weight: 600; color: #2c5364; margin-bottom: 15px;">
+                <a href="{{ site_url }}">Visit TechBobbles</a>
+            </p>
+
+            <div class="divider" style="margin: 20px auto; max-width: 200px;"></div>
+
+            <p>&copy; 2026 TechBobbles. All rights reserved.</p>
+            <p>
+                <a href="{{ unsubscribe_url }}">Unsubscribe</a>
+            </p>
+            <p style="margin-top: 15px; font-size: 12px;">
+                You're receiving this email because you subscribed to TechBobbles newsletter.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

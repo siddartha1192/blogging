@@ -304,6 +304,9 @@
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
     var currentMode = 'visual';
+    // Store original raw HTML before TinyMCE can modify it
+    var originalRawContent = document.getElementById('content').value;
+    var htmlEditorDirty = false;
 
     // Initialize TinyMCE
     function initTinyMCE() {
@@ -328,6 +331,10 @@
             link_default_target: '_blank',
             valid_elements: '*[*]',
             valid_children: '+body[style|script]',
+            custom_elements: 'style,~style',
+            protect: [
+                /<style[\s\S]*?<\/style>/gi
+            ],
             verify_html: false,
             entity_encoding: 'raw',
             remove_redundant_brs: false,
@@ -367,10 +374,17 @@
         var editorMode = document.getElementById('editorMode');
 
         if (mode === 'html') {
-            // Transfer content from TinyMCE to HTML textarea
             var editor = tinymce.get('content');
             if (editor) {
-                htmlTextarea.value = editor.getContent();
+                // If user made edits in visual mode, use TinyMCE content;
+                // otherwise use the original raw HTML to avoid any modification
+                if (editor.isDirty()) {
+                    htmlTextarea.value = editor.getContent();
+                    // Update original since user intentionally edited in visual mode
+                    originalRawContent = htmlTextarea.value;
+                } else if (!htmlEditorDirty) {
+                    htmlTextarea.value = originalRawContent;
+                }
                 editor.remove();
             }
             visualWrap.style.display = 'none';
@@ -383,6 +397,9 @@
             // Transfer content from HTML textarea back to TinyMCE
             var textarea = document.getElementById('content');
             textarea.value = htmlTextarea.value;
+            // Update original to reflect HTML editor changes
+            originalRawContent = htmlTextarea.value;
+            htmlEditorDirty = false;
             visualWrap.style.display = 'block';
             htmlWrap.style.display = 'none';
             btnVisual.classList.add('active');
@@ -402,6 +419,11 @@
         document.getElementById('slug').value = slug;
     });
 
+    // Track changes in the HTML editor
+    document.getElementById('htmlContent').addEventListener('input', function() {
+        htmlEditorDirty = true;
+    });
+
     // Form validation & sync before submit
     document.getElementById('postForm').addEventListener('submit', function(e) {
         var content = '';
@@ -412,7 +434,13 @@
         } else {
             var editor = tinymce.get('content');
             if (editor) {
-                content = editor.getContent();
+                // If user didn't edit in visual mode, preserve original HTML
+                if (!editor.isDirty()) {
+                    content = originalRawContent;
+                } else {
+                    content = editor.getContent();
+                }
+                document.getElementById('content').value = content;
             }
         }
         if (!content || content.trim() === '') {

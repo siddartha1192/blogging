@@ -69,6 +69,33 @@
         border: 2px solid #e9ecef;
     }
 
+    .topics-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .topic-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: #f0f0f0;
+        border: 2px solid #e0e0e0;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+        user-select: none;
+    }
+    .topic-chip:hover { background: #e8e8e8; }
+    .topic-chip input { display: none; }
+    .topic-chip.selected {
+        background: #e8f5e9;
+        border-color: #4CAF50;
+        color: #2e7d32;
+    }
+    .topic-chip .bi { font-size: 12px; }
+
     .editor-toggle {
         display: flex;
         gap: 0;
@@ -193,6 +220,23 @@
                     <label for="read_time" class="form-label">Read Time (minutes)</label>
                     <input type="number" class="form-control" id="read_time" name="read_time" value="{{ post.read_time }}" min="1">
                 </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-hash me-1"></i>Topics</label>
+                <div class="topics-grid">
+                    {% set selected_topic_ids = post.topics | map(attribute='id') | list %}
+                    {% for topic in topics %}
+                    <label class="topic-chip {% if topic.id in selected_topic_ids %}selected{% endif %}" onclick="this.classList.toggle('selected')">
+                        <input type="checkbox" name="topic_ids" value="{{ topic.id }}" {% if topic.id in selected_topic_ids %}checked{% endif %}>
+                        <i class="bi bi-hash"></i>{{ topic.name }}
+                    </label>
+                    {% endfor %}
+                    {% if not topics %}
+                    <small class="text-muted">No topics available. <a href="{{ url_for('admin_manage') }}">Create topics</a> first.</small>
+                    {% endif %}
+                </div>
+                <small class="text-muted mt-1 d-block">Select one or more topics for this post</small>
             </div>
 
             <div class="mb-3">

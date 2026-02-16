@@ -6,9 +6,51 @@
 <style>
 /* ── Post header ─────────────────────────────────── */
 .post-hero {
-    background: linear-gradient(135deg, #0f2027 0%, #203a43 60%, #2c5364 100%);
+    position: relative;
     color: #fff;
+    padding: 80px 0 56px;
+    min-height: 400px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+.post-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transform: scale(1.02);
+}
+.post-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to right,
+        rgba(15, 23, 42, 0.92) 0%,
+        rgba(15, 23, 42, 0.82) 35%,
+        rgba(15, 23, 42, 0.55) 65%,
+        rgba(15, 23, 42, 0.3) 100%
+    );
+}
+/* Subtle bottom gradient for content readability */
+.post-hero-overlay::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.7) 0%, transparent 100%);
+}
+/* Fallback when no featured image */
+.post-hero--no-img {
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 60%, #2c5364 100%);
+    min-height: auto;
     padding: 56px 0 48px;
+}
+.post-hero .container {
+    position: relative;
+    z-index: 2;
 }
 .post-hero .post-category {
     display: inline-block;
@@ -22,14 +64,15 @@
     margin-bottom: 18px;
 }
 .post-hero h1 {
-    font-size: 2.2rem;
+    font-size: 2.4rem;
     font-weight: 800;
     line-height: 1.25;
     margin-bottom: 16px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 .post-hero .post-excerpt {
     font-size: 1.08rem;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.8);
     line-height: 1.7;
     margin-bottom: 20px;
 }
@@ -38,7 +81,7 @@
     align-items: center;
     gap: 12px;
     font-size: 14px;
-    color: rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.7);
 }
 .post-hero .meta-row img { border: 2px solid rgba(255,255,255,0.3); }
 .post-hero .meta-row strong { color: #fff; }
@@ -51,12 +94,7 @@
     padding-right: 32px;
 }
 
-/* Featured image */
-.post-featured-img {
-    width: 100%;
-    border-radius: 10px;
-    margin-bottom: 32px;
-}
+/* Featured image (no longer used as standalone) */
 
 /* Prose / article body */
 .prose {
@@ -204,14 +242,32 @@
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 991px) {
     .post-layout .content-col { padding-right: 0; }
+    .post-hero { min-height: 340px; padding: 64px 0 44px; }
     .post-hero h1 { font-size: 1.75rem; }
+}
+@media (max-width: 767px) {
+    .post-hero { min-height: 300px; padding: 48px 0 36px; }
+    .post-hero h1 { font-size: 1.5rem; }
+    .post-hero .post-excerpt { font-size: 0.95rem; }
+    .post-hero-overlay {
+        background: linear-gradient(
+            to top,
+            rgba(15, 23, 42, 0.95) 0%,
+            rgba(15, 23, 42, 0.7) 50%,
+            rgba(15, 23, 42, 0.5) 100%
+        );
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Post Header -->
-<header class="post-hero">
+<header class="post-hero {% if not post.featured_image %}post-hero--no-img{% endif %}">
+    {% if post.featured_image %}
+    <div class="post-hero-bg" style="background-image: url('{{ post.featured_image }}');"></div>
+    <div class="post-hero-overlay"></div>
+    {% endif %}
     <div class="container">
         <div class="row">
             <div class="col-lg-9">
@@ -240,10 +296,6 @@
         <div class="row">
             <!-- Main content (left) -->
             <div class="col-lg-9 content-col">
-                {% if post.featured_image %}
-                <img src="{{ post.featured_image }}" alt="{{ post.title }}" class="post-featured-img">
-                {% endif %}
-
                 <article class="prose">
                     {{ post.content_html | safe }}
                 </article>

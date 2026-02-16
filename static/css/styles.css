@@ -63,7 +63,7 @@ a:hover { color: var(--accent-hover); }
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.6) 60%, rgba(15,23,42,0.3) 100%);
+  background: linear-gradient(to right, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.85) 30%, rgba(15,23,42,0.4) 60%, rgba(15,23,42,0.05) 85%, transparent 100%);
   z-index: 1;
 }
 
@@ -496,7 +496,7 @@ a:hover { color: var(--accent-hover); }
   height: 100%;
 }
 
-.newsletter-card-content { padding: 28px; }
+.newsletter-card-content { padding: 28px; overflow: hidden; }
 
 .newsletter-card-text h3 {
   font-size: 1.25rem;
@@ -513,12 +513,14 @@ a:hover { color: var(--accent-hover); }
 
 .newsletter-fields {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 12px;
 }
 
 .newsletter-field {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -527,6 +529,7 @@ a:hover { color: var(--accent-hover); }
   border-radius: var(--radius-sm);
   padding: 0 12px;
   transition: all var(--transition);
+  overflow: hidden;
 }
 
 .newsletter-field:focus-within {
@@ -538,6 +541,7 @@ a:hover { color: var(--accent-hover); }
 
 .newsletter-field input {
   flex: 1;
+  min-width: 0;
   background: transparent;
   border: none;
   outline: none;
@@ -668,6 +672,11 @@ footer h5 { font-weight: 600; margin-bottom: 1rem; }
 /* ============================================
    RESPONSIVE
    ============================================ */
+@media (max-width: 1199px) {
+  .newsletter-fields { flex-direction: column; }
+  .newsletter-field { flex: 1 1 100%; }
+}
+
 @media (max-width: 991px) {
   .hero-title { font-size: 2rem; }
   .hero-slide { min-height: 420px; }
@@ -678,8 +687,6 @@ footer h5 { font-weight: 600; margin-bottom: 1rem; }
   }
 
   .article-hero { grid-row: auto; }
-
-  .newsletter-fields { flex-direction: column; }
 }
 
 @media (max-width: 767px) {

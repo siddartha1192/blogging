@@ -655,9 +655,52 @@ a:hover { color: var(--accent-hover); }
 /* ============================================
    FOOTER
    ============================================ */
-footer { margin-top: 0; }
-footer h5 { font-weight: 600; margin-bottom: 1rem; }
-.social-icons a { font-size: 1.5rem; margin-right: 1rem; }
+.site-footer {
+  background: var(--primary);
+  color: rgba(255,255,255,0.5);
+  padding: 20px 0 16px;
+  font-size: 0.82rem;
+  margin-top: 0;
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-brand { display: flex; align-items: center; gap: 8px; }
+.footer-brand a { color: #fff; font-weight: 700; font-size: 1rem; }
+.footer-brand a:hover { color: var(--accent); }
+.footer-sep { color: rgba(255,255,255,0.25); }
+.footer-tagline { color: rgba(255,255,255,0.4); font-size: 0.8rem; }
+
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.footer-links a { color: rgba(255,255,255,0.5); transition: color var(--transition); }
+.footer-links a:hover { color: #fff; }
+
+.footer-social { display: flex; gap: 12px; }
+.footer-social a { color: rgba(255,255,255,0.4); font-size: 1rem; transition: color var(--transition); }
+.footer-social a:hover { color: #fff; }
+
+.footer-bottom {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  text-align: center;
+  color: rgba(255,255,255,0.3);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 767px) {
+  .footer-inner { flex-direction: column; text-align: center; }
+  .footer-brand { flex-direction: column; gap: 4px; }
+  .footer-sep { display: none; }
+  .footer-links { justify-content: center; }
+  .footer-social { justify-content: center; }
+}
 
 /* ============================================
    BADGE STYLES

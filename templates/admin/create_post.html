@@ -317,6 +317,10 @@
             link_default_target: '_blank',
             valid_elements: '*[*]',
             valid_children: '+body[style|script]',
+            custom_elements: 'style,~style',
+            protect: [
+                /<style[\s\S]*?<\/style>/gi
+            ],
             verify_html: false,
             entity_encoding: 'raw',
             remove_redundant_brs: false,

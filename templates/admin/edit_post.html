@@ -326,6 +326,12 @@
             automatic_uploads: true,
             image_advtab: true,
             link_default_target: '_blank',
+            valid_elements: '*[*]',
+            valid_children: '+body[style|script]',
+            verify_html: false,
+            entity_encoding: 'raw',
+            remove_redundant_brs: false,
+            fix_list_elements: false,
             codesample_languages: [
                 {text: 'Python', value: 'python'},
                 {text: 'JavaScript', value: 'javascript'},
@@ -346,6 +352,10 @@
     }
 
     initTinyMCE();
+
+    // Pre-populate HTML editor with original content from the database
+    // so switching to HTML mode shows unmodified content
+    document.getElementById('htmlContent').value = document.getElementById('content').value;
 
     // Switch between Visual Editor and HTML Code mode
     function switchEditor(mode) {

@@ -1,0 +1,345 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Manage{% endblock %}
+{% block page_title %}Manage Categories, Authors & Topics{% endblock %}
+
+{% block extra_css %}
+<style>
+    .manage-section { margin-bottom: 36px; }
+    .manage-section .card { border-radius: 12px; overflow: hidden; }
+    .manage-header { display: flex; justify-content: space-between; align-items: center; }
+    .manage-header h5 { margin: 0; font-weight: 600; }
+    .color-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 6px; border: 1px solid rgba(0,0,0,0.1); }
+    .table th { font-size: 13px; text-transform: uppercase; color: #888; font-weight: 600; letter-spacing: 0.5px; }
+    .table td { vertical-align: middle; }
+    .btn-group-sm .btn { padding: 4px 10px; font-size: 13px; }
+    .inline-form .form-control, .inline-form .form-select { font-size: 14px; }
+    .inline-form .row { --bs-gutter-x: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+
+{# ────────────────────────────────────────────────────────────────
+   CATEGORIES
+   ──────────────────────────────────────────────────────────────── #}
+<div class="manage-section">
+    <div class="card">
+        <div class="card-header bg-white manage-header">
+            <h5><i class="bi bi-tags me-2 text-info"></i>Categories ({{ categories|length }})</h5>
+            <button class="btn btn-sm btn-success" data-bs-toggle="collapse" data-bs-target="#addCategoryForm">
+                <i class="bi bi-plus-lg me-1"></i>Add Category
+            </button>
+        </div>
+
+        <!-- Create form (collapsed) -->
+        <div class="collapse" id="addCategoryForm">
+            <div class="card-body border-bottom bg-light">
+                <form method="POST" action="{{ url_for('admin_create_category') }}" class="inline-form">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">Name *</label>
+                            <input type="text" name="name" class="form-control" required placeholder="e.g. Finance" id="catName">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Slug *</label>
+                            <input type="text" name="slug" class="form-control" required placeholder="e.g. finance" id="catSlug">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Description</label>
+                            <input type="text" name="description" class="form-control" placeholder="Short description">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">Color</label>
+                            <input type="color" name="color" class="form-control form-control-color" value="#4CAF50">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-success w-100"><i class="bi bi-check-lg me-1"></i>Create</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            {% if categories %}
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr><th>Color</th><th>Name</th><th>Slug</th><th>Description</th><th>Posts</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td><span class="color-dot" style="background:{{ cat.color }}"></span></td>
+                    <td class="fw-semibold">{{ cat.name }}</td>
+                    <td><code>{{ cat.slug }}</code></td>
+                    <td class="text-muted">{{ cat.description or '—' }}</td>
+                    <td><span class="badge bg-secondary">{{ cat.posts|length }}</span></td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCatModal{{ cat.id }}"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCatModal{{ cat.id }}"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Edit modal -->
+                <div class="modal fade" id="editCatModal{{ cat.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <form method="POST" action="{{ url_for('admin_edit_category', cat_id=cat.id) }}">
+                            <div class="modal-content">
+                                <div class="modal-header"><h5 class="modal-title">Edit Category</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">
+                                    <div class="mb-3"><label class="form-label">Name *</label><input type="text" name="name" class="form-control" value="{{ cat.name }}" required></div>
+                                    <div class="mb-3"><label class="form-label">Slug *</label><input type="text" name="slug" class="form-control" value="{{ cat.slug }}" required></div>
+                                    <div class="mb-3"><label class="form-label">Description</label><input type="text" name="description" class="form-control" value="{{ cat.description or '' }}"></div>
+                                    <div class="mb-3"><label class="form-label">Color</label><input type="color" name="color" class="form-control form-control-color" value="{{ cat.color or '#000000' }}"></div>
+                                </div>
+                                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Delete modal -->
+                <div class="modal fade" id="deleteCatModal{{ cat.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-sm">
+                        <form method="POST" action="{{ url_for('admin_delete_category', cat_id=cat.id) }}">
+                            <div class="modal-content">
+                                <div class="modal-header"><h5 class="modal-title">Delete Category</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">Are you sure you want to delete <strong>{{ cat.name }}</strong>?{% if cat.posts %}<br><small class="text-danger">This category has {{ cat.posts|length }} post(s) — deletion will be blocked.</small>{% endif %}</div>
+                                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-danger">Delete</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-4 text-muted"><i class="bi bi-tags fs-1 d-block mb-2"></i>No categories yet. Click <strong>Add Category</strong> above.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# ────────────────────────────────────────────────────────────────
+   AUTHORS
+   ──────────────────────────────────────────────────────────────── #}
+<div class="manage-section">
+    <div class="card">
+        <div class="card-header bg-white manage-header">
+            <h5><i class="bi bi-people me-2 text-primary"></i>Authors ({{ authors|length }})</h5>
+            <button class="btn btn-sm btn-success" data-bs-toggle="collapse" data-bs-target="#addAuthorForm">
+                <i class="bi bi-plus-lg me-1"></i>Add Author
+            </button>
+        </div>
+
+        <div class="collapse" id="addAuthorForm">
+            <div class="card-body border-bottom bg-light">
+                <form method="POST" action="{{ url_for('admin_create_author') }}" class="inline-form">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label">Name *</label>
+                            <input type="text" name="name" class="form-control" required placeholder="Full name">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" class="form-control" required placeholder="email@example.com">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Bio</label>
+                            <input type="text" name="bio" class="form-control" placeholder="Short bio">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Avatar URL</label>
+                            <input type="text" name="avatar" class="form-control" placeholder="/static/images/...">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-success w-100"><i class="bi bi-check-lg me-1"></i>Create</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            {% if authors %}
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr><th>Avatar</th><th>Name</th><th>Email</th><th>Bio</th><th>Posts</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                {% for author in authors %}
+                <tr>
+                    <td>
+                        {% if author.avatar %}
+                        <img src="{{ author.avatar }}" alt="" width="32" height="32" class="rounded-circle">
+                        {% else %}
+                        <span class="bi bi-person-circle fs-4 text-muted"></span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-semibold">{{ author.name }}</td>
+                    <td>{{ author.email }}</td>
+                    <td class="text-muted">{{ (author.bio or '—')|truncate(50) }}</td>
+                    <td><span class="badge bg-secondary">{{ author.posts|length }}</span></td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editAuthorModal{{ author.id }}"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAuthorModal{{ author.id }}"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Edit modal -->
+                <div class="modal fade" id="editAuthorModal{{ author.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <form method="POST" action="{{ url_for('admin_edit_author', author_id=author.id) }}">
+                            <div class="modal-content">
+                                <div class="modal-header"><h5 class="modal-title">Edit Author</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">
+                                    <div class="mb-3"><label class="form-label">Name *</label><input type="text" name="name" class="form-control" value="{{ author.name }}" required></div>
+                                    <div class="mb-3"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" value="{{ author.email }}" required></div>
+                                    <div class="mb-3"><label class="form-label">Bio</label><textarea name="bio" class="form-control" rows="2">{{ author.bio or '' }}</textarea></div>
+                                    <div class="mb-3"><label class="form-label">Avatar URL</label><input type="text" name="avatar" class="form-control" value="{{ author.avatar or '' }}"></div>
+                                </div>
+                                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Delete modal -->
+                <div class="modal fade" id="deleteAuthorModal{{ author.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-sm">
+                        <form method="POST" action="{{ url_for('admin_delete_author', author_id=author.id) }}">
+                            <div class="modal-content">
+                                <div class="modal-header"><h5 class="modal-title">Delete Author</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">Are you sure you want to delete <strong>{{ author.name }}</strong>?{% if author.posts %}<br><small class="text-danger">This author has {{ author.posts|length }} post(s) — deletion will be blocked.</small>{% endif %}</div>
+                                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-danger">Delete</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-4 text-muted"><i class="bi bi-people fs-1 d-block mb-2"></i>No authors yet. Click <strong>Add Author</strong> above.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# ────────────────────────────────────────────────────────────────
+   TOPICS
+   ──────────────────────────────────────────────────────────────── #}
+<div class="manage-section">
+    <div class="card">
+        <div class="card-header bg-white manage-header">
+            <h5><i class="bi bi-hash me-2 text-warning"></i>Topics ({{ topics|length }})</h5>
+            <button class="btn btn-sm btn-success" data-bs-toggle="collapse" data-bs-target="#addTopicForm">
+                <i class="bi bi-plus-lg me-1"></i>Add Topic
+            </button>
+        </div>
+
+        <div class="collapse" id="addTopicForm">
+            <div class="card-body border-bottom bg-light">
+                <form method="POST" action="{{ url_for('admin_create_topic') }}" class="inline-form">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">Name *</label>
+                            <input type="text" name="name" class="form-control" required placeholder="e.g. Machine Learning" id="topicName">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Slug *</label>
+                            <input type="text" name="slug" class="form-control" required placeholder="e.g. machine-learning" id="topicSlug">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-success w-100"><i class="bi bi-check-lg me-1"></i>Create</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            {% if topics %}
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr><th>Name</th><th>Slug</th><th>Posts</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                {% for topic in topics %}
+                <tr>
+                    <td class="fw-semibold"><i class="bi bi-hash text-muted"></i> {{ topic.name }}</td>
+                    <td><code>{{ topic.slug }}</code></td>
+                    <td><span class="badge bg-secondary">{{ topic.posts.count() }}</span></td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editTopicModal{{ topic.id }}"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTopicModal{{ topic.id }}"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Edit modal -->
+                <div class="modal fade" id="editTopicModal{{ topic.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <form method="POST" action="{{ url_for('admin_edit_topic', topic_id=topic.id) }}">
+                            <div class="modal-content">
+                                <div class="modal-header"><h5 class="modal-title">Edit Topic</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">
+                                    <div class="mb-3"><label class="form-label">Name *</label><input type="text" name="name" class="form-control" value="{{ topic.name }}" required></div>
+                                    <div class="mb-3"><label class="form-label">Slug *</label><input type="text" name="slug" class="form-control" value="{{ topic.slug }}" required></div>
+                                </div>
+                                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Delete modal -->
+                <div class="modal fade" id="deleteTopicModal{{ topic.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-sm">
+                        <form method="POST" action="{{ url_for('admin_delete_topic', topic_id=topic.id) }}">
+                            <div class="modal-content">
+                                <div class="modal-header"><h5 class="modal-title">Delete Topic</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">Are you sure you want to delete <strong>{{ topic.name }}</strong>?</div>
+                                <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-danger">Delete</button></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-4 text-muted"><i class="bi bi-hash fs-1 d-block mb-2"></i>No topics yet. Click <strong>Add Topic</strong> above.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-generate slugs from name fields
+function autoSlug(nameInput, slugInput) {
+    nameInput.addEventListener('input', function() {
+        slugInput.value = this.value.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+    });
+}
+const catName = document.getElementById('catName');
+const catSlug = document.getElementById('catSlug');
+if (catName && catSlug) autoSlug(catName, catSlug);
+
+const topicName = document.getElementById('topicName');
+const topicSlug = document.getElementById('topicSlug');
+if (topicName && topicSlug) autoSlug(topicName, topicSlug);
+</script>
+{% endblock %}

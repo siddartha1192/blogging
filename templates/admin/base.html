@@ -189,6 +189,10 @@
                     <i class="bi bi-plus-circle"></i>
                     Create New Post
                 </a>
+                <a href="{{ url_for('admin_manage') }}" class="nav-link {% if request.endpoint == 'admin_manage' %}active{% endif %}">
+                    <i class="bi bi-gear"></i>
+                    Manage
+                </a>
                 <a href="{{ url_for('home') }}" class="nav-link" target="_blank">
                     <i class="bi bi-globe"></i>
                     View Website

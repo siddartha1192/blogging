@@ -429,6 +429,8 @@ def admin_dashboard():
     total_posts = Post.query.count()
     total_subscribers = Subscriber.query.count()
     total_categories = Category.query.count()
+    total_authors = Author.query.count()
+    total_topics = Topic.query.count()
     recent_posts = Post.query.order_by(Post.publish_date.desc()).limit(5).all()
     recent_subscribers = Subscriber.query.order_by(Subscriber.subscribed_on.desc()).limit(5).all()
 
@@ -436,6 +438,8 @@ def admin_dashboard():
                          total_posts=total_posts,
                          total_subscribers=total_subscribers,
                          total_categories=total_categories,
+                         total_authors=total_authors,
+                         total_topics=total_topics,
                          recent_posts=recent_posts,
                          recent_subscribers=recent_subscribers)
 
@@ -545,6 +549,151 @@ def admin_delete_post(post_id):
     db.session.commit()
     flash(f'Post "{title}" deleted successfully!', 'success')
     return redirect(url_for('admin_posts'))
+
+## ── Category management ──────────────────────────────────────────
+
+@app.route('/admin/manage')
+@admin_required
+def admin_manage():
+    categories = Category.query.order_by(Category.name).all()
+    authors = Author.query.order_by(Author.name).all()
+    topics = Topic.query.order_by(Topic.name).all()
+    return render_template('admin/manage.html',
+                           categories=categories,
+                           authors=authors,
+                           topics=topics)
+
+@app.route('/admin/categories/create', methods=['POST'])
+@admin_required
+def admin_create_category():
+    name = request.form.get('name', '').strip()
+    slug = request.form.get('slug', '').strip()
+    description = request.form.get('description', '').strip()
+    color = request.form.get('color', '#000000').strip()
+
+    if not name or not slug:
+        flash('Category name and slug are required.', 'danger')
+        return redirect(url_for('admin_manage'))
+
+    if Category.query.filter_by(slug=slug).first():
+        flash(f'A category with slug "{slug}" already exists.', 'warning')
+        return redirect(url_for('admin_manage'))
+
+    db.session.add(Category(name=name, slug=slug, description=description, color=color))
+    db.session.commit()
+    flash(f'Category "{name}" created successfully!', 'success')
+    return redirect(url_for('admin_manage'))
+
+@app.route('/admin/categories/<int:cat_id>/edit', methods=['POST'])
+@admin_required
+def admin_edit_category(cat_id):
+    cat = Category.query.get_or_404(cat_id)
+    cat.name = request.form.get('name', cat.name).strip()
+    cat.slug = request.form.get('slug', cat.slug).strip()
+    cat.description = request.form.get('description', '').strip()
+    cat.color = request.form.get('color', cat.color).strip()
+    db.session.commit()
+    flash(f'Category "{cat.name}" updated.', 'success')
+    return redirect(url_for('admin_manage'))
+
+@app.route('/admin/categories/<int:cat_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_category(cat_id):
+    cat = Category.query.get_or_404(cat_id)
+    if cat.posts:
+        flash(f'Cannot delete "{cat.name}" — it still has {len(cat.posts)} post(s).', 'danger')
+    else:
+        db.session.delete(cat)
+        db.session.commit()
+        flash(f'Category "{cat.name}" deleted.', 'success')
+    return redirect(url_for('admin_manage'))
+
+## ── Author management ────────────────────────────────────────────
+
+@app.route('/admin/authors/create', methods=['POST'])
+@admin_required
+def admin_create_author():
+    name = request.form.get('name', '').strip()
+    email = request.form.get('email', '').strip()
+    bio = request.form.get('bio', '').strip()
+    avatar = request.form.get('avatar', '').strip()
+
+    if not name or not email:
+        flash('Author name and email are required.', 'danger')
+        return redirect(url_for('admin_manage'))
+
+    if Author.query.filter_by(email=email).first():
+        flash(f'An author with email "{email}" already exists.', 'warning')
+        return redirect(url_for('admin_manage'))
+
+    db.session.add(Author(name=name, email=email, bio=bio, avatar=avatar or None))
+    db.session.commit()
+    flash(f'Author "{name}" created successfully!', 'success')
+    return redirect(url_for('admin_manage'))
+
+@app.route('/admin/authors/<int:author_id>/edit', methods=['POST'])
+@admin_required
+def admin_edit_author(author_id):
+    author = Author.query.get_or_404(author_id)
+    author.name = request.form.get('name', author.name).strip()
+    author.email = request.form.get('email', author.email).strip()
+    author.bio = request.form.get('bio', '').strip()
+    author.avatar = request.form.get('avatar', author.avatar or '').strip() or author.avatar
+    db.session.commit()
+    flash(f'Author "{author.name}" updated.', 'success')
+    return redirect(url_for('admin_manage'))
+
+@app.route('/admin/authors/<int:author_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_author(author_id):
+    author = Author.query.get_or_404(author_id)
+    if author.posts:
+        flash(f'Cannot delete "{author.name}" — they still have {len(author.posts)} post(s).', 'danger')
+    else:
+        db.session.delete(author)
+        db.session.commit()
+        flash(f'Author "{author.name}" deleted.', 'success')
+    return redirect(url_for('admin_manage'))
+
+## ── Topic management ─────────────────────────────────────────────
+
+@app.route('/admin/topics/create', methods=['POST'])
+@admin_required
+def admin_create_topic():
+    name = request.form.get('name', '').strip()
+    slug = request.form.get('slug', '').strip()
+
+    if not name or not slug:
+        flash('Topic name and slug are required.', 'danger')
+        return redirect(url_for('admin_manage'))
+
+    if Topic.query.filter_by(slug=slug).first():
+        flash(f'A topic with slug "{slug}" already exists.', 'warning')
+        return redirect(url_for('admin_manage'))
+
+    db.session.add(Topic(name=name, slug=slug))
+    db.session.commit()
+    flash(f'Topic "{name}" created successfully!', 'success')
+    return redirect(url_for('admin_manage'))
+
+@app.route('/admin/topics/<int:topic_id>/edit', methods=['POST'])
+@admin_required
+def admin_edit_topic(topic_id):
+    topic = Topic.query.get_or_404(topic_id)
+    topic.name = request.form.get('name', topic.name).strip()
+    topic.slug = request.form.get('slug', topic.slug).strip()
+    db.session.commit()
+    flash(f'Topic "{topic.name}" updated.', 'success')
+    return redirect(url_for('admin_manage'))
+
+@app.route('/admin/topics/<int:topic_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_topic(topic_id):
+    topic = Topic.query.get_or_404(topic_id)
+    db.session.delete(topic)
+    db.session.commit()
+    flash(f'Topic "{topic.name}" deleted.', 'success')
+    return redirect(url_for('admin_manage'))
 
 @app.route('/admin/upload-image', methods=['POST'])
 @admin_required

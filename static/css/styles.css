@@ -63,7 +63,7 @@ a:hover { color: var(--accent-hover); }
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.6) 60%, rgba(15,23,42,0.3) 100%);
+  background: linear-gradient(to right, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.85) 30%, rgba(15,23,42,0.4) 60%, rgba(15,23,42,0.05) 85%, transparent 100%);
   z-index: 1;
 }
 

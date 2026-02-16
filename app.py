@@ -491,6 +491,13 @@ def admin_create_post():
         db.session.add(new_post)
         db.session.commit()
 
+        # Attach selected topics
+        topic_ids = request.form.getlist('topic_ids')
+        if topic_ids:
+            selected_topics = Topic.query.filter(Topic.id.in_(topic_ids)).all()
+            new_post.topics = selected_topics
+            db.session.commit()
+
         # Send email to all subscribers if publishing now
         if publish_now:
             send_new_post_notification(new_post)
@@ -500,7 +507,8 @@ def admin_create_post():
 
     categories = Category.query.all()
     authors = Author.query.all()
-    return render_template('admin/create_post.html', categories=categories, authors=authors)
+    topics = Topic.query.order_by(Topic.name).all()
+    return render_template('admin/create_post.html', categories=categories, authors=authors, topics=topics)
 
 @app.route('/admin/edit-post/<int:post_id>', methods=['GET', 'POST'])
 @admin_required
@@ -532,13 +540,18 @@ def admin_edit_post(post_id):
         if featured_image_url and not (request.files.get('featured_image_file') and request.files['featured_image_file'].filename):
             post.featured_image = featured_image_url
 
+        # Update topics
+        topic_ids = request.form.getlist('topic_ids')
+        post.topics = Topic.query.filter(Topic.id.in_(topic_ids)).all() if topic_ids else []
+
         db.session.commit()
         flash(f'Post "{post.title}" updated successfully!', 'success')
         return redirect(url_for('admin_posts'))
 
     categories = Category.query.all()
     authors = Author.query.all()
-    return render_template('admin/edit_post.html', post=post, categories=categories, authors=authors)
+    topics = Topic.query.order_by(Topic.name).all()
+    return render_template('admin/edit_post.html', post=post, categories=categories, authors=authors, topics=topics)
 
 @app.route('/admin/delete-post/<int:post_id>', methods=['POST'])
 @admin_required

@@ -73,6 +73,12 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
+        max-height: 180px;
+        overflow-y: auto;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        background: #fafafa;
     }
     .topic-chip {
         display: flex;
@@ -224,19 +230,19 @@
 
             <div class="mb-3">
                 <label class="form-label"><i class="bi bi-hash me-1"></i>Topics</label>
-                <div class="topics-grid">
+                <div class="topics-grid" id="topicsGrid">
                     {% set selected_topic_ids = post.topics | map(attribute='id') | list %}
                     {% for topic in topics %}
-                    <label class="topic-chip {% if topic.id in selected_topic_ids %}selected{% endif %}" onclick="this.classList.toggle('selected')">
+                    <div class="topic-chip {% if topic.id in selected_topic_ids %}selected{% endif %}" data-topic-id="{{ topic.id }}">
                         <input type="checkbox" name="topic_ids" value="{{ topic.id }}" {% if topic.id in selected_topic_ids %}checked{% endif %}>
                         <i class="bi bi-hash"></i>{{ topic.name }}
-                    </label>
+                    </div>
                     {% endfor %}
                     {% if not topics %}
                     <small class="text-muted">No topics available. <a href="{{ url_for('admin_manage') }}">Create topics</a> first.</small>
                     {% endif %}
                 </div>
-                <small class="text-muted mt-1 d-block">Select one or more topics for this post</small>
+                <small class="text-muted mt-1 d-block">Click to select one or more topics for this post</small>
             </div>
 
             <div class="mb-3">
@@ -404,6 +410,15 @@
             alert('Please add content to your post before saving.');
             return false;
         }
+    });
+
+    // Topic chip click handler
+    document.querySelectorAll('#topicsGrid .topic-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+            var cb = this.querySelector('input[type="checkbox"]');
+            cb.checked = !cb.checked;
+            this.classList.toggle('selected', cb.checked);
+        });
     });
 </script>
 {% endblock %}

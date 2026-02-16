@@ -48,7 +48,7 @@
     padding: 40px 0 56px;
 }
 .post-layout .content-col {
-    padding-right: 40px;
+    padding-right: 32px;
 }
 
 /* Featured image */
@@ -60,7 +60,7 @@
 
 /* Prose / article body */
 .prose {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     line-height: 1.9;
     color: #2d2d2d;
 }
@@ -131,26 +131,26 @@
 .sidebar-widget {
     background: #fff;
     border: 1px solid #eee;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 18px;
 }
 .sidebar-widget h5 {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: #2c5364;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
     border-bottom: 2px solid #2c5364;
 }
 
 /* Recent posts sidebar */
 .recent-post-item {
     display: flex;
-    gap: 12px;
-    padding: 12px 0;
+    gap: 10px;
+    padding: 10px 0;
     border-bottom: 1px solid #f0f0f0;
     text-decoration: none;
     color: inherit;
@@ -159,25 +159,25 @@
 .recent-post-item:last-child { border-bottom: none; }
 .recent-post-item:hover { opacity: 0.8; }
 .recent-post-thumb {
-    width: 70px;
-    height: 55px;
-    border-radius: 8px;
+    width: 56px;
+    height: 44px;
+    border-radius: 6px;
     object-fit: cover;
     flex-shrink: 0;
 }
 .recent-post-info { flex: 1; min-width: 0; }
 .recent-post-info h6 {
-    font-size: 14px;
+    font-size: 12.5px;
     font-weight: 600;
-    margin: 0 0 4px;
-    line-height: 1.35;
+    margin: 0 0 3px;
+    line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     color: #1a1a1a;
 }
-.recent-post-info small { color: #999; font-size: 12px; }
+.recent-post-info small { color: #999; font-size: 11px; }
 
 /* Tags cloud */
 .tags-cloud {
@@ -186,10 +186,10 @@
     gap: 8px;
 }
 .tags-cloud a {
-    padding: 5px 14px;
+    padding: 4px 10px;
     background: #f5f5f5;
     border-radius: 20px;
-    font-size: 13px;
+    font-size: 11.5px;
     color: #555;
     transition: all 0.2s;
 }
@@ -214,7 +214,7 @@
 <header class="post-hero">
     <div class="container">
         <div class="row">
-            <div class="col-lg-8">
+            <div class="col-lg-9">
                 <a href="{{ url_for('category', slug=post.category.slug) }}"
                    class="post-category" style="background-color: {{ post.category.color }}">
                     {{ post.category.name }}
@@ -239,7 +239,7 @@
     <div class="container">
         <div class="row">
             <!-- Main content (left) -->
-            <div class="col-lg-8 content-col">
+            <div class="col-lg-9 content-col">
                 {% if post.featured_image %}
                 <img src="{{ post.featured_image }}" alt="{{ post.title }}" class="post-featured-img">
                 {% endif %}
@@ -270,7 +270,7 @@
             </div>
 
             <!-- Sidebar (right) -->
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <div class="sidebar-sticky">
                     <!-- Recent Posts -->
                     <div class="sidebar-widget">

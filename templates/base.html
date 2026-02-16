@@ -48,43 +48,30 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="site-footer">
         <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5>About techbobbles</h5>
-                    <p>A source for the latest technology news, insights, and tutorials in finance, automation, and tech news.</p>
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <a href="{{ url_for('home') }}">techbobbles</a>
+                    <span class="footer-sep">&middot;</span>
+                    <span class="footer-tagline">Tech news, insights & tutorials</span>
                 </div>
-                <div class="col-md-4">
-                    <h5>Categories</h5>
-                    <ul class="list-unstyled">
-                        {% for cat in categories %}
-                        <li><a href="{{ url_for('category', slug=cat.slug) }}" class="text-light">{{ cat.name }}</a></li>
-                        {% endfor %}
-                    </ul>
-                    <li class="mt-2">
-                        <a href="{{ url_for('about') }}" class="text-light">
-                            <i class="bi bi-info-circle"></i> About
-                        </a>
-                    </li>
-                    <li class="mt-2">
-                        <a href="{{ url_for('admin_login') }}" class="text-light">
-                            <i class="bi bi-shield-lock"></i> Admin Panel
-                        </a>
-                    </li>
+                <div class="footer-links">
+                    {% for cat in categories %}
+                    <a href="{{ url_for('category', slug=cat.slug) }}">{{ cat.name }}</a>
+                    {% endfor %}
+                    <a href="{{ url_for('about') }}">About</a>
                 </div>
-                <div class="col-md-4">
-                    <h5>Connect With Us</h5>
-                    <div class="social-icons">
-                        <a href="https://x.com/vicidas" class="text-light me-2"><i class="bi bi-twitter-x"></i></a>
-                        <a href="https://www.facebook.com/siddartha.das" class="text-light me-2"><i class="bi bi-facebook"></i></a>
-                        <a href="https://www.linkedin.com/in/siddartha-das-0973544a/" class="text-light me-2"><i class="bi bi-linkedin"></i></a>
-                        <a href="https://github.com/siddartha1192/Siddartha" class="text-light"><i class="bi bi-github"></i></a>
-                    </div>
+                <div class="footer-social">
+                    <a href="https://x.com/vicidas" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                    <a href="https://www.facebook.com/siddartha.das" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="https://www.linkedin.com/in/siddartha-das-0973544a/" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    <a href="https://github.com/siddartha1192/Siddartha" aria-label="GitHub"><i class="bi bi-github"></i></a>
                 </div>
             </div>
-            <hr>
-            <p class="text-center mb-0">&copy; {{ now.year }} techbobbles. All rights reserved.</p>
+            <div class="footer-bottom">
+                &copy; {{ now.year }} techbobbles. All rights reserved.
+            </div>
         </div>
     </footer>
 

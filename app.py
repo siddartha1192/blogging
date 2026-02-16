@@ -299,9 +299,11 @@ def post(slug):
     else:
         post.content_html = markdown.markdown(post.content)
     trending_topics = Topic.query.limit(8).all()
+    recent_posts = Post.query.filter(Post.id != post.id).order_by(Post.publish_date.desc()).limit(4).all()
     return render_template('post.html',
                            post=post,
-                           trending_topics=trending_topics)
+                           trending_topics=trending_topics,
+                           recent_posts=recent_posts)
 
 
 @app.route('/search')

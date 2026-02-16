@@ -4,185 +4,172 @@
 
 {% block content %}
 <!-- Featured Posts Slider -->
-<section class="featured-posts-slider position-relative">
-    <div class="container">
-        <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
-            <div class="carousel-inner">
-                {% for post in featured_posts %}
-                <div class="carousel-item {% if loop.first %}active{% endif %}">
-                    <div class="featured-post-card">
-                        <div class="row g-0">
-                            <div class="col-md-6">
-                                <div class="featured-post-content p-4 p-md-5">
-                                    <div class="mb-3">
-                                        <span class="badge" style="background-color: {{ post.category.color }}">
-                                            {{ post.category.name }}
-                                        </span>
-                                    </div>
-                                    <h2 class="display-5 fw-bold mb-3">{{ post.title }}</h2>
-                                    <p class="lead mb-4">{{ post.excerpt }}</p>
-                                    <div class="d-flex align-items-center mb-4">
-                                        <img src="{{ post.author.avatar }}" alt="{{ post.author.name }}" class="rounded-circle me-2" width="40" height="40">
-                                        <div>
-                                            <div class="fw-bold">{{ post.author.name }}</div>
-                                            <div class="text-muted small">{{ post.publish_date.strftime('%b %d, %Y') }} · {{ post.read_time }} min read</div>
-                                        </div>
-                                    </div>
-                                    <a href="{{ url_for('post', slug=post.slug) }}" class="btn btn-primary">Read Article</a>
+<section class="hero-slider">
+    <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+            {% for post in featured_posts %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                <div class="hero-slide">
+                    <div class="hero-bg" style="background-image: url('{{ post.featured_image }}');"></div>
+                    <div class="hero-overlay"></div>
+                    <div class="container position-relative" style="z-index: 2;">
+                        <div class="row align-items-center min-vh-50">
+                            <div class="col-lg-7 col-xl-6">
+                                <span class="hero-badge" style="background-color: {{ post.category.color }}">{{ post.category.name }}</span>
+                                <h1 class="hero-title">{{ post.title }}</h1>
+                                <p class="hero-excerpt">{{ post.excerpt }}</p>
+                                <div class="hero-meta">
+                                    <img src="{{ post.author.avatar }}" alt="{{ post.author.name }}" class="rounded-circle" width="36" height="36">
+                                    <span class="hero-meta-text">
+                                        <strong>{{ post.author.name }}</strong>
+                                        <span>{{ post.publish_date.strftime('%b %d, %Y') }} &middot; {{ post.read_time }} min read</span>
+                                    </span>
                                 </div>
-                            </div>
-                            <div class="col-md-6 d-none d-md-block position-relative">
-                                <img src="{{ post.featured_image }}" class="featured-post-image position-absolute top-0 start-0 w-100 h-100" alt="{{ post.title }}" style="object-fit: contain; object-position: center;">
+                                <a href="{{ url_for('post', slug=post.slug) }}" class="hero-cta">
+                                    Read Article <i class="bi bi-arrow-right ms-2"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-            <div class="carousel-indicators">
-                {% for post in featured_posts %}
-                <button type="button" data-bs-target="#featuredCarousel" data-bs-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ loop.index }}"></button>
-                {% endfor %}
-            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </button>
+        <div class="carousel-indicators">
+            {% for post in featured_posts %}
+            <button type="button" data-bs-target="#featuredCarousel" data-bs-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active" aria-current="true"{% endif %}></button>
+            {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- Category Navigation -->
-<section class="py-5 category-section">
+<!-- Category Navigation - Compact Pills -->
+<section class="category-bar">
     <div class="container">
-        <h2 class="section-title text-center mb-5" style="color: #1a237e; font-weight: 800;">Browse by Category</h2>
-        <div class="categories-container">
+        <div class="category-pills">
             {% for category in categories %}
-            <a href="{{ url_for('category', slug=category.slug) }}" class="category-card-modern">
-                <div class="category-icon" style="background-color: {{ category.color }}20; border-color: {{ category.color }}">
-                    <i class="bi bi-{{ 'cash-coin' if category.name == 'Finance' else 'robot' if category.name == 'Automation' else 'newspaper' }}" style="color: {{ category.color }}"></i>
-                </div>
-                <h3 class="category-title-modern" style="color: {{ category.color }}">{{ category.name }}</h3>
-                <p class="category-description-modern">{{ category.description }}</p>
-                <div class="category-arrow" style="color: {{ category.color }}">
-                    <i class="bi bi-arrow-right-circle"></i>
-                </div>
+            <a href="{{ url_for('category', slug=category.slug) }}" class="category-pill" style="--pill-color: {{ category.color }}">
+                <i class="bi bi-{{ 'cash-coin' if category.name == 'Finance' else 'robot' if category.name == 'Automation' else 'newspaper' }}"></i>
+                <span>{{ category.name }}</span>
+                <span class="pill-count">{{ category.posts | length }}</span>
             </a>
             {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- Latest Articles -->
-<section class="py-5">
+<!-- Latest Articles - Magazine Layout -->
+<section class="articles-section">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="section-title">Latest Articles</h2>
+        <div class="section-header">
+            <h2 class="section-heading">Latest Articles</h2>
+            <div class="section-line"></div>
         </div>
-        <div class="row">
+
+        <div class="articles-grid">
             {% for post in latest_posts %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card post-card h-100">
-                    <img src="{{ post.featured_image }}" class="card-img-top" alt="{{ post.title }}">
-                    <div class="card-body">
-                        <div class="mb-2">
-                            <span class="badge" style="background-color: {{ post.category.color }}">{{ post.category.name }}</span>
-                        </div>
-                        <h5 class="card-title">{{ post.title }}</h5>
-                        <p class="card-text">{{ post.excerpt | truncate(120) }}</p>
-                    </div>
-                    <div class="card-footer bg-white border-0">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <img src="{{ post.author.avatar }}" alt="{{ post.author.name }}" class="rounded-circle me-2" width="30" height="30">
-                                <small class="text-muted">{{ post.author.name }}</small>
-                            </div>
-                            <small class="text-muted">{{ post.publish_date.strftime('%b %d') }} · {{ post.read_time }} min</small>
-                        </div>
-                        <a href="{{ url_for('post', slug=post.slug) }}" class="stretched-link"></a>
+            {% if loop.first %}
+            <!-- Hero Article -->
+            <a href="{{ url_for('post', slug=post.slug) }}" class="article-hero">
+                <div class="article-hero-image">
+                    <img src="{{ post.featured_image }}" alt="{{ post.title }}">
+                    <div class="article-hero-overlay"></div>
+                </div>
+                <div class="article-hero-content">
+                    <span class="article-badge" style="background-color: {{ post.category.color }}">{{ post.category.name }}</span>
+                    <h3 class="article-hero-title">{{ post.title }}</h3>
+                    <p class="article-hero-excerpt">{{ post.excerpt }}</p>
+                    <div class="article-meta">
+                        <img src="{{ post.author.avatar }}" alt="{{ post.author.name }}" class="rounded-circle" width="28" height="28">
+                        <span>{{ post.author.name }}</span>
+                        <span class="meta-dot">&middot;</span>
+                        <span>{{ post.publish_date.strftime('%b %d, %Y') }}</span>
+                        <span class="meta-dot">&middot;</span>
+                        <span>{{ post.read_time }} min</span>
                     </div>
                 </div>
-            </div>
+            </a>
+            {% else %}
+            <!-- Regular Article Card -->
+            <a href="{{ url_for('post', slug=post.slug) }}" class="article-card">
+                <div class="article-card-image">
+                    <img src="{{ post.featured_image }}" alt="{{ post.title }}">
+                </div>
+                <div class="article-card-body">
+                    <span class="article-badge-sm" style="color: {{ post.category.color }}">{{ post.category.name }}</span>
+                    <h4 class="article-card-title">{{ post.title }}</h4>
+                    <p class="article-card-excerpt">{{ post.excerpt | truncate(90) }}</p>
+                    <div class="article-meta-sm">
+                        <img src="{{ post.author.avatar }}" alt="{{ post.author.name }}" class="rounded-circle" width="22" height="22">
+                        <span>{{ post.author.name }}</span>
+                        <span class="meta-dot">&middot;</span>
+                        <span>{{ post.publish_date.strftime('%b %d') }}</span>
+                    </div>
+                </div>
+            </a>
+            {% endif %}
             {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- Trending Topics -->
-<section class="py-5 bg-light">
+<!-- Trending + Newsletter Combined -->
+<section class="bottom-section">
     <div class="container">
-        <h2 class="section-title text-center mb-4">Trending Topics</h2>
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="topic-tags text-center">
-                    {% for topic in trending_topics %}
-                    <a href="{{ url_for('topic', slug=topic.slug) }}" class="topic-tag">{{ topic.name }}</a>
-                    {% endfor %}
+        <div class="row g-4">
+            <!-- Trending Topics -->
+            <div class="col-lg-5">
+                <div class="trending-card">
+                    <div class="trending-header">
+                        <i class="bi bi-fire"></i>
+                        <h3>Trending Topics</h3>
+                    </div>
+                    <div class="trending-tags">
+                        {% for topic in trending_topics %}
+                        <a href="{{ url_for('topic', slug=topic.slug) }}" class="trending-tag">
+                            <i class="bi bi-hash"></i>{{ topic.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
 
-<!-- Newsletter Subscription -->
-<section class="py-4 newsletter-section">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="newsletter-signup-modern text-center p-3 p-md-4">
-                    <div class="newsletter-icon mb-3">
-                        <i class="bi bi-envelope-heart"></i>
-                    </div>
-                    <h2 class="mb-2 fw-bold fs-4" style="color: #1a237e;">Stay Updated with Tech Insights</h2>
-                    <p class="mb-3 small text-muted">Get the latest tech news and tutorials delivered to your inbox!</p>
-                    <form id="newsletter-form" class="newsletter-form-modern" data-url="{{ url_for('subscribe') }}">
-                        <!-- Name Field -->
-                        <div class="input-group-modern-single mb-2">
-                            <i class="bi bi-person input-icon-single"></i>
-                            <input type="text" id="subscriber-name" class="form-control-modern-single" placeholder="Your Name (Optional)">
+            <!-- Newsletter -->
+            <div class="col-lg-7">
+                <div class="newsletter-card">
+                    <div class="newsletter-card-content">
+                        <div class="newsletter-card-text">
+                            <h3>Stay in the loop</h3>
+                            <p>Get the latest tech news and tutorials delivered weekly.</p>
                         </div>
-
-                        <!-- Email Field (Required) -->
-                        <div class="input-group-modern-single mb-2">
-                            <i class="bi bi-envelope input-icon-single"></i>
-                            <input type="email" id="subscriber-email" class="form-control-modern-single" placeholder="Your Email Address *" required>
-                        </div>
-
-                        <!-- Phone Field -->
-                        <div class="input-group-modern-single mb-2">
-                            <i class="bi bi-telephone input-icon-single"></i>
-                            <input type="tel" id="subscriber-phone" class="form-control-modern-single" placeholder="Phone Number (Optional)">
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button class="btn-subscribe-full" type="submit">
-                            <span>Subscribe to Newsletter</span>
-                            <i class="bi bi-arrow-right"></i>
-                        </button>
-
-                        <div class="form-text text-muted" style="font-size: 0.75rem; margin-top: 0.5rem;">
-                            <i class="bi bi-shield-check"></i> We respect your privacy. Unsubscribe anytime.
-                        </div>
-                        <div id="subscription-response" class="mt-2"></div>
-                    </form>
-                    <div class="newsletter-stats mt-3 pt-3" style="border-top: 1px solid rgba(0, 0, 0, 0.08);">
-                        <div class="row text-center">
-                            <div class="col-4">
-                                <div class="stat-number">15K+</div>
-                                <div class="stat-label">Subscribers</div>
+                        <form id="newsletter-form" class="newsletter-inline-form" data-url="{{ url_for('subscribe') }}">
+                            <div class="newsletter-fields">
+                                <div class="newsletter-field">
+                                    <i class="bi bi-person"></i>
+                                    <input type="text" id="subscriber-name" placeholder="Name (optional)">
+                                </div>
+                                <div class="newsletter-field">
+                                    <i class="bi bi-envelope"></i>
+                                    <input type="email" id="subscriber-email" placeholder="Email address" required>
+                                </div>
+                                <div class="newsletter-field">
+                                    <i class="bi bi-telephone"></i>
+                                    <input type="tel" id="subscriber-phone" placeholder="Phone (optional)">
+                                </div>
                             </div>
-                            <div class="col-4">
-                                <div class="stat-number">Weekly</div>
-                                <div class="stat-label">Updates</div>
-                            </div>
-                            <div class="col-4">
-                                <div class="stat-number">100%</div>
-                                <div class="stat-label">Free</div>
-                            </div>
+                            <button type="submit" class="newsletter-submit">
+                                Subscribe <i class="bi bi-arrow-right"></i>
+                            </button>
+                            <div id="subscription-response" class="mt-2"></div>
+                        </form>
+                        <div class="newsletter-trust">
+                            <i class="bi bi-shield-check"></i> No spam. Unsubscribe anytime.
                         </div>
                     </div>
                 </div>
@@ -190,6 +177,4 @@
         </div>
     </div>
 </section>
-
-
 {% endblock %}

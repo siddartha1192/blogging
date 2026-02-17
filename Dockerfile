@@ -15,12 +15,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create uploads directory
+# Create uploads directory and set ownership
 RUN mkdir -p /app/static/uploads
-
-# Non-root user for security
 RUN addgroup --system app && adduser --system --ingroup app app \
     && chown -R app:app /app
+
+# Declare volume AFTER mkdir+chown (mirrors postgres image pattern).
+# This tells Docker the mountpoint exists — avoids mkdirat on read-only overlayfs.
+VOLUME /app/static/uploads
+
 USER app
 
 EXPOSE 8000

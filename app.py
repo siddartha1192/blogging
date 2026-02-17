@@ -733,7 +733,10 @@ def admin_upload_image():
 # Helper function to initialize the database with sample data
 def init_db():
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+        except Exception:
+            pass  # Tables already exist (e.g. race condition with multiple gunicorn workers)
         
         # Only add sample data if the database is empty
         if Category.query.count() == 0:

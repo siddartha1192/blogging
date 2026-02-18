@@ -1297,10 +1297,15 @@ def create_placeholder_images():
             with open(os.path.join(posts_dir, img_name), 'w') as f:
                 f.write(svg_content)
 
-# Initialize the database and create placeholder images
-init_db()
-create_placeholder_images()
+# NOTE: init_db() and create_placeholder_images() are intentionally NOT called
+# here at module level. They are called once by docker-entrypoint.sh before
+# gunicorn starts, avoiding the multi-worker race condition that occurred when
+# all 4 workers imported this module simultaneously and each tried to seed the DB.
 
-# Run the application
+# Run the application (local development only)
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        init_db()
+        create_placeholder_images()
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=True)

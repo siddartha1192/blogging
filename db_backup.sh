@@ -52,7 +52,8 @@ hr()     { printf '%0.s─' {1..60}; echo; }
 
 check_running() {
     local svc="$1"
-    if ! $COMPOSE ps "$svc" --format '{{.State}}' 2>/dev/null | grep -q "running"; then
+    # docker-compose v1 prints "Up"; v2 prints "running" — match either
+    if ! $COMPOSE ps "$svc" 2>/dev/null | grep -qE "\bUp\b|running"; then
         red "ERROR: '${svc}' container is not running."
         echo "Start it with:  docker-compose up -d ${svc}"
         exit 1

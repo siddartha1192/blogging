@@ -573,10 +573,12 @@ def admin_manage():
     categories = Category.query.order_by(Category.name).all()
     authors = Author.query.order_by(Author.name).all()
     topics = Topic.query.order_by(Topic.name).all()
+    users = User.query.order_by(User.created_at.desc()).all()
     return render_template('admin/manage.html',
                            categories=categories,
                            authors=authors,
-                           topics=topics)
+                           topics=topics,
+                           users=users)
 
 @app.route('/admin/categories/create', methods=['POST'])
 @admin_required
@@ -708,6 +710,46 @@ def admin_delete_topic(topic_id):
     db.session.delete(topic)
     db.session.commit()
     flash(f'Topic "{topic.name}" deleted.', 'success')
+    return redirect(url_for('admin_manage'))
+
+## ── User management ──────────────────────────────────────────────
+
+@app.route('/admin/users/create', methods=['POST'])
+@admin_required
+def admin_create_user():
+    name = request.form.get('name', '').strip()
+    email = request.form.get('email', '').strip()
+
+    if not name or not email:
+        flash('User name and email are required.', 'danger')
+        return redirect(url_for('admin_manage'))
+
+    if User.query.filter_by(email=email).first():
+        flash(f'A user with email "{email}" already exists.', 'warning')
+        return redirect(url_for('admin_manage'))
+
+    db.session.add(User(name=name, email=email))
+    db.session.commit()
+    flash(f'User "{name}" created successfully!', 'success')
+    return redirect(url_for('admin_manage'))
+
+@app.route('/admin/users/<int:user_id>/edit', methods=['POST'])
+@admin_required
+def admin_edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    user.name = request.form.get('name', user.name).strip()
+    user.email = request.form.get('email', user.email).strip()
+    db.session.commit()
+    flash(f'User "{user.name}" updated.', 'success')
+    return redirect(url_for('admin_manage'))
+
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'User "{user.name}" deleted.', 'success')
     return redirect(url_for('admin_manage'))
 
 @app.route('/admin/upload-image', methods=['POST'])

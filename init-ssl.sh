@@ -20,7 +20,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-COMPOSE="docker-compose -f ${SCRIPT_DIR}/docker-compose.yml"
+COMPOSE="docker compose -f ${SCRIPT_DIR}/docker-compose.yml"
 
 # ── Colours ────────────────────────────────────────────────────────────────
 red()    { printf '\033[0;31m%s\033[0m\n' "$*"; }

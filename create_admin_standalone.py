@@ -1,21 +1,52 @@
 #!/usr/bin/env python3
 """
-Standalone Admin User Creation / Password Reset Script
-Works directly with the SQLite database — no app dependencies needed.
+Standalone Admin Account Manager — PostgreSQL edition.
 
-Usage: python3 create_admin_standalone.py
+Reads DATABASE_URL from the environment or from a .env file in the same
+directory. Works directly against PostgreSQL so it is safe to use while
+the Docker container is running.
+
+Usage (from the project root on the HOST):
+    python3 create_admin_standalone.py
+
+Or from inside the running container:
+    docker-compose exec app python create_admin_standalone.py
 """
 
-import sqlite3
-import sys
 import os
+import sys
 import getpass
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'techblog.db')
+
+# ── Load .env so DATABASE_URL is available without exporting manually ──────
+def _load_dotenv(path=None):
+    path = path or os.path.join(os.path.dirname(__file__), '.env')
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            key, _, value = line.partition('=')
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+_load_dotenv()
 
 
-def get_password_hash(password):
+# ── Resolve DATABASE_URL ───────────────────────────────────────────────────
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
+
+# docker-compose sets it as postgresql://...; psycopg2 accepts that too.
+if not DATABASE_URL:
+    print("ERROR: DATABASE_URL is not set.")
+    print("  Set it in your .env file or export it before running this script.")
+    sys.exit(1)
+
+
+# ── Password hashing ───────────────────────────────────────────────────────
+def hash_password(password: str) -> str:
     try:
         from werkzeug.security import generate_password_hash
         return generate_password_hash(password, method='pbkdf2:sha256')
@@ -26,52 +57,68 @@ def get_password_hash(password):
         return f"pbkdf2:sha256:260000${salt}${dk.hex()}"
 
 
-def ensure_admin_table(conn):
-    conn.execute("""
+# ── DB connection (supports both psycopg2 and psycopg) ────────────────────
+def get_connection():
+    try:
+        import psycopg2
+        return psycopg2.connect(DATABASE_URL), psycopg2
+    except ImportError:
+        pass
+    try:
+        import psycopg
+        return psycopg.connect(DATABASE_URL), psycopg
+    except ImportError:
+        pass
+    print("ERROR: No PostgreSQL driver found.")
+    print("  Install one:  pip install psycopg2-binary")
+    sys.exit(1)
+
+
+def ensure_table(cur):
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS admin (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             username VARCHAR(80) UNIQUE NOT NULL,
             password_hash VARCHAR(255) NOT NULL,
             email VARCHAR(255) UNIQUE NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            last_login DATETIME
+            created_at TIMESTAMP DEFAULT NOW(),
+            last_login TIMESTAMP
         )
     """)
-    conn.commit()
 
 
-def get_new_password():
+def prompt_password() -> str:
     password = getpass.getpass("New password (min 6 chars): ")
     if len(password) < 6:
-        print("Error: Password must be at least 6 characters.")
+        print("ERROR: Password must be at least 6 characters.")
         sys.exit(1)
     confirm = getpass.getpass("Confirm password: ")
     if password != confirm:
-        print("Error: Passwords do not match.")
+        print("ERROR: Passwords do not match.")
         sys.exit(1)
     return password
 
 
+# ── Main ───────────────────────────────────────────────────────────────────
 def main():
-    print("\n" + "=" * 50)
-    print("   TechBobbles — Admin Account Manager")
-    print("=" * 50 + "\n")
+    print("\n" + "=" * 55)
+    print("   TechBobbles — Admin Account Manager (PostgreSQL)")
+    print("=" * 55 + "\n")
 
-    if not os.path.exists(DB_PATH):
-        print(f"Database not found at: {DB_PATH}")
-        print("Run this script from the project root directory.")
-        sys.exit(1)
+    conn, _ = get_connection()
+    conn.autocommit = False
+    cur = conn.cursor()
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    ensure_admin_table(conn)
+    ensure_table(cur)
+    conn.commit()
 
-    existing = conn.execute("SELECT id, username, email FROM admin").fetchall()
+    cur.execute("SELECT id, username, email FROM admin ORDER BY id")
+    existing = cur.fetchall()
 
     if existing:
         print("Existing admin accounts:")
-        for i, row in enumerate(existing, 1):
-            print(f"  {i}. {row['username']} ({row['email']})")
+        for row in existing:
+            print(f"  {row[0]}. {row[1]} ({row[2]})")
         print()
         print("Options:")
         print("  1. Reset password for an existing admin")
@@ -84,29 +131,33 @@ def main():
             else:
                 num = input(f"Enter account number (1-{len(existing)}): ").strip()
                 try:
-                    target = existing[int(num) - 1]
-                except (ValueError, IndexError):
+                    target = next(r for r in existing if r[0] == int(num))
+                except (ValueError, StopIteration):
                     print("Invalid selection.")
                     sys.exit(1)
 
-            print(f"\nResetting password for: {target['username']} ({target['email']})")
-            password = get_new_password()
-            password_hash = get_password_hash(password)
-            conn.execute("UPDATE admin SET password_hash = ? WHERE id = ?",
-                         (password_hash, target['id']))
+            print(f"\nResetting password for: {target[1]} ({target[2]})")
+            password = prompt_password()
+            pw_hash = hash_password(password)
+
+            cur.execute(
+                "UPDATE admin SET password_hash = %s WHERE id = %s",
+                (pw_hash, target[0])
+            )
             conn.commit()
+            cur.close()
             conn.close()
 
-            print("\n" + "=" * 50)
+            print("\n" + "=" * 55)
             print("  Password reset successfully!")
-            print("=" * 50)
-            print(f"  Username : {target['username']}")
-            print(f"  Login at : http://localhost:8080/admin/login")
-            print("=" * 50 + "\n")
+            print("=" * 55)
+            print(f"  Username : {target[1]}")
+            print(f"  Login at : /admin/login")
+            print("=" * 55 + "\n")
             return
 
         elif choice != '2':
-            print("Invalid choice. Exiting.")
+            print("Invalid choice.")
             sys.exit(1)
 
     # Create new admin
@@ -114,38 +165,42 @@ def main():
 
     username = input("Username: ").strip()
     if not username:
-        print("Error: Username cannot be empty.")
+        print("ERROR: Username cannot be empty.")
         sys.exit(1)
-    if conn.execute("SELECT id FROM admin WHERE username = ?", (username,)).fetchone():
-        print(f"Error: Username '{username}' is already taken.")
+
+    cur.execute("SELECT id FROM admin WHERE username = %s", (username,))
+    if cur.fetchone():
+        print(f"ERROR: Username '{username}' is already taken.")
         sys.exit(1)
 
     email = input("Email: ").strip()
     if not email or '@' not in email:
-        print("Error: A valid email address is required.")
-        sys.exit(1)
-    if conn.execute("SELECT id FROM admin WHERE email = ?", (email,)).fetchone():
-        print(f"Error: Email '{email}' is already in use.")
+        print("ERROR: A valid email address is required.")
         sys.exit(1)
 
-    password = get_new_password()
-    password_hash = get_password_hash(password)
-    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    cur.execute("SELECT id FROM admin WHERE email = %s", (email,))
+    if cur.fetchone():
+        print(f"ERROR: Email '{email}' is already in use.")
+        sys.exit(1)
 
-    conn.execute(
-        "INSERT INTO admin (username, password_hash, email, created_at) VALUES (?, ?, ?, ?)",
-        (username, password_hash, email, now)
+    password = prompt_password()
+    pw_hash = hash_password(password)
+
+    cur.execute(
+        "INSERT INTO admin (username, password_hash, email, created_at) VALUES (%s, %s, %s, %s)",
+        (username, pw_hash, email, datetime.utcnow())
     )
     conn.commit()
+    cur.close()
     conn.close()
 
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 55)
     print("  Admin account created successfully!")
-    print("=" * 50)
+    print("=" * 55)
     print(f"  Username : {username}")
     print(f"  Email    : {email}")
-    print(f"  Login at : http://localhost:8080/admin/login")
-    print("=" * 50 + "\n")
+    print(f"  Login at : /admin/login")
+    print("=" * 55 + "\n")
 
 
 if __name__ == '__main__':

@@ -1,67 +1,82 @@
 #!/bin/bash
 # =============================================================================
-# db_backup.sh — TechBobbles PostgreSQL backup & restore tool
+# db_backup.sh — TechBobbles full backup & restore (DB + static uploads)
+#
+# Each backup is a single .tar.gz bundle:
+#   techblog_YYYYMMDD_HHMMSS.tar.gz
+#   ├── db.sql.gz        ← PostgreSQL dump
+#   └── uploads.tar.gz   ← /app/static/uploads/ from the uploads volume
 #
 # Usage:
-#   ./db_backup.sh            → create a backup (default)
-#   ./db_backup.sh backup     → create a backup
-#   ./db_backup.sh restore    → restore from a chosen backup file
-#   ./db_backup.sh list       → list all available backups
-#   ./db_backup.sh clean      → delete backups older than KEEP_DAYS
+#   ./db_backup.sh              → create a full backup (default)
+#   ./db_backup.sh backup       → create a full backup
+#   ./db_backup.sh restore      → restore DB + uploads from a chosen backup
+#   ./db_backup.sh restore db   → restore database only
+#   ./db_backup.sh restore files→ restore uploads only
+#   ./db_backup.sh list         → list all available backups
+#   ./db_backup.sh clean        → delete backups older than KEEP_DAYS
 #
 # Requirements:
-#   - Docker + docker-compose running
-#   - .env file present in the same directory as this script
+#   - Docker + docker-compose running  (db and app containers)
+#   - .env file in the same directory as this script
 # =============================================================================
 
 set -euo pipefail
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# ── Config ─────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKUP_DIR="${SCRIPT_DIR}/backups"
-KEEP_DAYS=30          # delete backups older than this many days during clean
+KEEP_DAYS=30
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+COMPOSE="docker-compose -f ${SCRIPT_DIR}/docker-compose.yml"
 
-# ── Load .env ─────────────────────────────────────────────────────────────────
+# ── Load .env ──────────────────────────────────────────────────────────────
 ENV_FILE="${SCRIPT_DIR}/.env"
-if [[ ! -f "$ENV_FILE" ]]; then
-    echo "ERROR: .env file not found at ${ENV_FILE}"
-    exit 1
-fi
-
-# Export only the Postgres vars we need (avoids polluting the environment)
+[[ -f "$ENV_FILE" ]] || { echo "ERROR: .env not found at ${ENV_FILE}"; exit 1; }
 export $(grep -E '^POSTGRES_(USER|PASSWORD|DB)=' "$ENV_FILE" | xargs)
-
 : "${POSTGRES_USER:?POSTGRES_USER not set in .env}"
 : "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set in .env}"
 : "${POSTGRES_DB:?POSTGRES_DB not set in .env}"
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ── Helpers ────────────────────────────────────────────────────────────────
 red()    { printf '\033[0;31m%s\033[0m\n' "$*"; }
 green()  { printf '\033[0;32m%s\033[0m\n' "$*"; }
 yellow() { printf '\033[0;33m%s\033[0m\n' "$*"; }
 bold()   { printf '\033[1m%s\033[0m\n'   "$*"; }
+step()   { printf '\033[0;36m  %-40s\033[0m' "$*"; }
+ok()     { printf '\033[0;32m OK\033[0m\n'; }
 hr()     { printf '%0.s─' {1..60}; echo; }
 
-check_db_running() {
-    if ! docker-compose -f "${SCRIPT_DIR}/docker-compose.yml" ps db \
-            --format '{{.State}}' 2>/dev/null | grep -q "running"; then
-        red "ERROR: The 'db' container is not running."
-        echo "Start it with:  docker-compose up -d db"
+check_running() {
+    local svc="$1"
+    if ! $COMPOSE ps "$svc" --format '{{.State}}' 2>/dev/null | grep -q "running"; then
+        red "ERROR: '${svc}' container is not running."
+        echo "Start it with:  docker-compose up -d ${svc}"
         exit 1
     fi
 }
 
-# ── Backup ────────────────────────────────────────────────────────────────────
+# Create a temp dir and guarantee cleanup on exit
+TMPDIR_WORK=""
+cleanup() {
+    [[ -n "$TMPDIR_WORK" && -d "$TMPDIR_WORK" ]] && rm -rf "$TMPDIR_WORK"
+}
+trap cleanup EXIT
+
+# ── Backup ─────────────────────────────────────────────────────────────────
 do_backup() {
     mkdir -p "$BACKUP_DIR"
-    check_db_running
+    check_running db
+    check_running app
 
-    local file="${BACKUP_DIR}/techblog_${TIMESTAMP}.sql.gz"
+    local bundle="${BACKUP_DIR}/techblog_${TIMESTAMP}.tar.gz"
+    TMPDIR_WORK="$(mktemp -d)"
 
-    bold; echo "Creating backup…"; hr
+    bold; echo "Creating full backup…"; hr
 
-    docker-compose -f "${SCRIPT_DIR}/docker-compose.yml" exec -T db \
+    # 1. Database dump
+    step "Dumping PostgreSQL database…"
+    $COMPOSE exec -T db \
         pg_dump \
             --username="$POSTGRES_USER" \
             --no-password \
@@ -70,24 +85,42 @@ do_backup() {
             --no-owner \
             --no-acl \
             "$POSTGRES_DB" \
-        | gzip > "$file"
+        | gzip > "${TMPDIR_WORK}/db.sql.gz"
+    ok
+
+    # 2. Static uploads from the app container (reads the Docker volume)
+    step "Archiving static uploads…"
+    $COMPOSE exec -T app \
+        tar czf - -C /app/static/uploads . \
+        > "${TMPDIR_WORK}/uploads.tar.gz" 2>/dev/null || {
+            # If uploads dir is empty tar exits non-zero; create an empty archive
+            tar czf "${TMPDIR_WORK}/uploads.tar.gz" -T /dev/null 2>/dev/null || true
+        }
+    ok
+
+    # 3. Bundle both into one archive
+    step "Bundling into single archive…"
+    tar czf "$bundle" -C "$TMPDIR_WORK" db.sql.gz uploads.tar.gz
+    ok
 
     local size
-    size="$(du -sh "$file" | cut -f1)"
+    size="$(du -sh "$bundle" | cut -f1)"
 
+    echo
     green "Backup saved:"
-    echo "  File : ${file}"
-    echo "  Size : ${size}"
-    echo "  Time : $(date)"
+    echo "  File      : ${bundle}"
+    echo "  Size      : ${size}"
+    echo "  Timestamp : ${TIMESTAMP}"
+    echo "  Contains  : PostgreSQL dump + static uploads"
     hr
 }
 
-# ── List ──────────────────────────────────────────────────────────────────────
+# ── List ───────────────────────────────────────────────────────────────────
 do_list() {
     mkdir -p "$BACKUP_DIR"
     bold; echo "Available backups in ${BACKUP_DIR}:"; hr
 
-    local files=("${BACKUP_DIR}"/techblog_*.sql.gz)
+    local files=("${BACKUP_DIR}"/techblog_*.tar.gz)
     if [[ ! -e "${files[0]}" ]]; then
         yellow "No backups found."
         return
@@ -95,20 +128,20 @@ do_list() {
 
     local i=1
     for f in "${files[@]}"; do
-        printf "  %2d.  %s  (%s)\n" "$i" "$(basename "$f")" "$(du -sh "$f" | cut -f1)"
+        local ts
+        ts="$(basename "$f" | sed 's/techblog_\(.*\)\.tar\.gz/\1/' \
+              | sed 's/\(....\)\(..\)\(..\)_\(..\)\(..\)\(..\)/\1-\2-\3 \4:\5:\6/')"
+        printf "  %2d.  %-45s %s  (%s)\n" \
+            "$i" "$(basename "$f")" "$ts" "$(du -sh "$f" | cut -f1)"
         (( i++ ))
     done
     hr
     echo "Total: $((i-1)) backup(s)"
 }
 
-# ── Restore ───────────────────────────────────────────────────────────────────
-do_restore() {
-    mkdir -p "$BACKUP_DIR"
-    check_db_running
-
-    # Build array of available backups
-    local files=("${BACKUP_DIR}"/techblog_*.sql.gz)
+# ── Pick a backup file interactively ───────────────────────────────────────
+pick_backup() {
+    local files=("${BACKUP_DIR}"/techblog_*.tar.gz)
     if [[ ! -e "${files[0]}" ]]; then
         red "No backup files found in ${BACKUP_DIR}"
         exit 1
@@ -131,28 +164,75 @@ do_restore() {
         exit 1
     fi
 
-    local target="${files[$((choice-1))]}"
+    # Return selected file via stdout
+    echo "${files[$((choice-1))]}"
+}
+
+# ── Restore ────────────────────────────────────────────────────────────────
+do_restore() {
+    mkdir -p "$BACKUP_DIR"
+    check_running db
+    check_running app
+
+    # Optional mode: "db" | "files" | "" (both)
+    local mode="${1:-both}"
+
+    local target
+    target="$(pick_backup)"
+
     echo
-    yellow "WARNING: This will OVERWRITE the current '${POSTGRES_DB}' database."
+    case "$mode" in
+        db)    yellow "WARNING: This will OVERWRITE the '${POSTGRES_DB}' database." ;;
+        files) yellow "WARNING: This will OVERWRITE all files in the uploads volume." ;;
+        both)  yellow "WARNING: This will OVERWRITE the database AND all uploads." ;;
+    esac
     read -rp "Type 'yes' to confirm: " confirm
     [[ "$confirm" != "yes" ]] && { echo "Aborted."; exit 0; }
 
-    bold; echo "Restoring from $(basename "$target")…"; hr
+    TMPDIR_WORK="$(mktemp -d)"
+    bold; echo; echo "Restoring from $(basename "$target")…"; hr
 
-    gunzip -c "$target" | \
-        docker-compose -f "${SCRIPT_DIR}/docker-compose.yml" exec -T db \
-            psql \
-                --username="$POSTGRES_USER" \
-                --no-password \
-                --dbname="$POSTGRES_DB" \
-                --quiet
+    # Extract the bundle
+    step "Extracting bundle…"
+    tar xzf "$target" -C "$TMPDIR_WORK"
+    ok
 
+    # ── Restore database ────────────────────────────────────────────────
+    if [[ "$mode" == "db" || "$mode" == "both" ]]; then
+        step "Restoring PostgreSQL database…"
+        gunzip -c "${TMPDIR_WORK}/db.sql.gz" | \
+            $COMPOSE exec -T db \
+                psql \
+                    --username="$POSTGRES_USER" \
+                    --no-password \
+                    --dbname="$POSTGRES_DB" \
+                    --quiet
+        ok
+    fi
+
+    # ── Restore uploads ─────────────────────────────────────────────────
+    if [[ "$mode" == "files" || "$mode" == "both" ]]; then
+        step "Restoring static uploads…"
+        # Clear existing uploads inside the container, then extract
+        $COMPOSE exec -T app sh -c \
+            'find /app/static/uploads -mindepth 1 -not -name ".gitkeep" -delete'
+        $COMPOSE exec -T app \
+            tar xzf - -C /app/static/uploads \
+            < "${TMPDIR_WORK}/uploads.tar.gz"
+        # Fix ownership in case tar extracted as root
+        $COMPOSE exec -T app sh -c \
+            'chown -R app:app /app/static/uploads 2>/dev/null || true'
+        ok
+    fi
+
+    echo
     green "Restore complete."
-    echo "Restart the app to pick up changes:  docker-compose restart app"
+    echo "Restart the app to pick up changes:"
+    echo "  docker-compose restart app"
     hr
 }
 
-# ── Clean ─────────────────────────────────────────────────────────────────────
+# ── Clean ──────────────────────────────────────────────────────────────────
 do_clean() {
     mkdir -p "$BACKUP_DIR"
     bold; echo "Removing backups older than ${KEEP_DAYS} days…"; hr
@@ -162,7 +242,7 @@ do_clean() {
         echo "  Deleting: $(basename "$f")"
         rm -f "$f"
         (( count++ ))
-    done < <(find "$BACKUP_DIR" -name 'techblog_*.sql.gz' \
+    done < <(find "$BACKUP_DIR" -name 'techblog_*.tar.gz' \
                 -mtime +"$KEEP_DAYS" -print0)
 
     if (( count == 0 )); then
@@ -173,16 +253,27 @@ do_clean() {
     hr
 }
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+# ── Entry point ────────────────────────────────────────────────────────────
 CMD="${1:-backup}"
+SUBCMD="${2:-both}"
 
 case "$CMD" in
-    backup)  do_backup  ;;
-    restore) do_restore ;;
-    list)    do_list    ;;
-    clean)   do_clean   ;;
+    backup)  do_backup ;;
+    restore)
+        case "$SUBCMD" in
+            db)    do_restore db    ;;
+            files) do_restore files ;;
+            both|"") do_restore both ;;
+            *)
+                red "Unknown restore target '${SUBCMD}'. Use: db | files | (blank for both)"
+                exit 1
+                ;;
+        esac
+        ;;
+    list)    do_list   ;;
+    clean)   do_clean  ;;
     *)
-        echo "Usage: $0 [backup|restore|list|clean]"
+        bold "Usage: $0 [backup|restore [db|files]|list|clean]"
         exit 1
         ;;
 esac

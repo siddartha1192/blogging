@@ -151,28 +151,30 @@ do_list() {
 pick_backup() {
     local files=("${BACKUP_DIR}"/techblog_*.tar.gz)
     if [[ ! -e "${files[0]}" ]]; then
-        red "No backup files found in ${BACKUP_DIR}"
+        red "No backup files found in ${BACKUP_DIR}" >&2
         exit 1
     fi
 
-    bold; echo "Available backups:"; hr
+    # All display output goes to stderr — this function is called inside $()
+    # so anything on stdout gets captured as the return value (the filename).
+    { bold; echo "Available backups:"; hr; } >&2
     local i=1
     for f in "${files[@]}"; do
-        printf "  %2d.  %s  (%s)\n" "$i" "$(basename "$f")" "$(du -sh "$f" | cut -f1)"
+        printf "  %2d.  %s  (%s)\n" "$i" "$(basename "$f")" "$(du -sh "$f" | cut -f1)" >&2
         (( i++ ))
     done
-    hr
+    hr >&2
 
     local choice
     read -rp "Enter number to restore (or 'q' to quit): " choice
     [[ "$choice" == "q" ]] && exit 0
 
     if ! [[ "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice >= i )); then
-        red "Invalid selection."
+        red "Invalid selection." >&2
         exit 1
     fi
 
-    # Return selected file via stdout
+    # Only the filepath goes to stdout — captured by target="$(pick_backup)"
     echo "${files[$((choice-1))]}"
 }
 

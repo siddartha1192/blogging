@@ -32,6 +32,9 @@ ENV/
 postgres_data/
 certbot/
 
+# Generated SSL nginx config (produced by init-ssl.sh from nginx/nginx.conf template)
+nginx/nginx-ssl.conf
+
 # Database backups — keep locally, never commit
 backups/
 

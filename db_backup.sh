@@ -52,8 +52,12 @@ hr()     { printf '%0.s─' {1..60}; echo; }
 
 check_running() {
     local svc="$1"
-    # docker-compose v1 prints "Up"; v2 prints "running" — match either
-    if ! $COMPOSE ps "$svc" 2>/dev/null | grep -qE "\bUp\b|running"; then
+    # Get the container ID for this service (works with Compose v1 & v2)
+    local cid
+    cid="$($COMPOSE ps -q "$svc" 2>/dev/null)"
+    # docker inspect gives a definitive true/false — no text-format ambiguity
+    if [[ -z "$cid" ]] || \
+       ! docker inspect -f '{{.State.Running}}' "$cid" 2>/dev/null | grep -q "^true$"; then
         red "ERROR: '${svc}' container is not running."
         echo "Start it with:  docker-compose up -d ${svc}"
         exit 1

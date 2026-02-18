@@ -31,7 +31,7 @@ KEEP_DAYS=30      # delete backup archives older than this many days
 LOG_KEEP_DAYS=10  # delete log files older than this many days
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 LOG_DIR="${SCRIPT_DIR}/logs"
-COMPOSE="docker-compose -f ${SCRIPT_DIR}/docker-compose.yml"
+COMPOSE="docker compose -f ${SCRIPT_DIR}/docker-compose.yml"
 
 # ── Load .env ──────────────────────────────────────────────────────────────
 ENV_FILE="${SCRIPT_DIR}/.env"

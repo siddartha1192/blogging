@@ -2,10 +2,13 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system deps (gcc for C extensions, libpq-dev for psycopg2)
+# Install system deps
+# gosu  → clean privilege-drop in entrypoint (root → app user)
+# gcc / libpq-dev → compile psycopg2
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -15,23 +18,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create uploads directory and set ownership
-RUN mkdir -p /app/static/uploads
-RUN addgroup --system app && adduser --system --ingroup app app \
+# Create unprivileged user and hand ownership of /app to it.
+# The uploads directory is owned by 'app' here, but the entrypoint
+# re-applies chown at runtime so named-volume mounts are always writable.
+RUN mkdir -p /app/static/uploads /app/static/seed \
+    && addgroup --system app && adduser --system --ingroup app app \
     && chown -R app:app /app
 
-# Declare volume AFTER mkdir+chown (mirrors postgres image pattern).
-# This tells Docker the mountpoint exists — avoids mkdirat on read-only overlayfs.
-VOLUME /app/static/uploads
-
-USER app
+# Entrypoint runs as root so it can fix volume permissions, then drops
+# to 'app' via gosu before exec-ing gunicorn.
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["gunicorn", "wsgi:app", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "4", \
-     "--threads", "2", \
-     "--timeout", "120", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-"]
+ENTRYPOINT ["docker-entrypoint.sh"]

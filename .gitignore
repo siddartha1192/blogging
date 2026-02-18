@@ -31,3 +31,11 @@ ENV/
 # Docker volumes / certs
 postgres_data/
 certbot/
+
+# Runtime uploads are managed by the Docker volume — do NOT commit them.
+# To deploy images via Git, put them in static/seed/ instead.
+static/uploads/
+!static/uploads/.gitkeep
+
+# static/seed/ IS tracked — this is where you commit images for Git-based deployment.
+!static/seed/

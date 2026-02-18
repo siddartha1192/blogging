@@ -4,6 +4,7 @@ from flask_mail import Mail, Message
 from datetime import datetime
 import markdown
 import os
+import logging
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -18,6 +19,17 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-testing')
+
+# Logging setup
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('admin_auth.log'),
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///techblog.db')
@@ -401,20 +413,32 @@ def admin_login():
         return redirect(url_for('admin_dashboard'))
 
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        logger.debug(f"Admin login attempt — username: '{username}' (len={len(username)}), password length: {len(password)}")
 
         admin = Admin.query.filter_by(username=username).first()
 
-        if admin and check_password_hash(admin.password_hash, password):
-            session['admin_id'] = admin.id
-            session['admin_username'] = admin.username
-            admin.last_login = datetime.utcnow()
-            db.session.commit()
-            flash(f'Welcome back, {admin.username}!', 'success')
-            return redirect(url_for('admin_dashboard'))
-        else:
+        if not admin:
+            logger.warning(f"Admin login failed — no account found for username: '{username}'")
             flash('Invalid username or password.', 'danger')
+        else:
+            logger.debug(f"Admin found — id={admin.id}, username='{admin.username}', hash_prefix='{admin.password_hash[:20]}'")
+            password_ok = check_password_hash(admin.password_hash, password)
+            logger.debug(f"Password check result: {password_ok}")
+
+            if password_ok:
+                session['admin_id'] = admin.id
+                session['admin_username'] = admin.username
+                admin.last_login = datetime.utcnow()
+                db.session.commit()
+                logger.info(f"Admin login SUCCESS — username: '{admin.username}'")
+                flash(f'Welcome back, {admin.username}!', 'success')
+                return redirect(url_for('admin_dashboard'))
+            else:
+                logger.warning(f"Admin login failed — wrong password for username: '{admin.username}'")
+                flash('Invalid username or password.', 'danger')
 
     return render_template('admin/login.html')
 

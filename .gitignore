@@ -32,6 +32,9 @@ ENV/
 postgres_data/
 certbot/
 
+# Database backups — keep locally, never commit
+backups/
+
 # Runtime uploads are managed by the Docker volume — do NOT commit them.
 # To deploy images via Git, put them in static/seed/ instead.
 static/uploads/

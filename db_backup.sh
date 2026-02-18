@@ -15,6 +15,7 @@
 #   ./db_backup.sh restore files→ restore uploads only
 #   ./db_backup.sh list         → list all available backups
 #   ./db_backup.sh clean        → delete backups older than KEEP_DAYS
+#                                 AND log files older than LOG_KEEP_DAYS (10 days)
 #
 # Requirements:
 #   - Docker + docker-compose running  (db and app containers)
@@ -26,8 +27,10 @@ set -euo pipefail
 # ── Config ─────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKUP_DIR="${SCRIPT_DIR}/backups"
-KEEP_DAYS=30
+KEEP_DAYS=30      # delete backup archives older than this many days
+LOG_KEEP_DAYS=10  # delete log files older than this many days
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+LOG_DIR="${SCRIPT_DIR}/logs"
 COMPOSE="docker-compose -f ${SCRIPT_DIR}/docker-compose.yml"
 
 # ── Load .env ──────────────────────────────────────────────────────────────
@@ -235,20 +238,42 @@ do_restore() {
 # ── Clean ──────────────────────────────────────────────────────────────────
 do_clean() {
     mkdir -p "$BACKUP_DIR"
+
+    # ── 1. Old backup archives ───────────────────────────────────────────
     bold; echo "Removing backups older than ${KEEP_DAYS} days…"; hr
 
-    local count=0
+    local bcount=0
     while IFS= read -r -d '' f; do
         echo "  Deleting: $(basename "$f")"
         rm -f "$f"
-        (( count++ ))
+        (( bcount++ ))
     done < <(find "$BACKUP_DIR" -name 'techblog_*.tar.gz' \
                 -mtime +"$KEEP_DAYS" -print0)
 
-    if (( count == 0 )); then
-        green "Nothing to clean — all backups are within ${KEEP_DAYS} days."
+    if (( bcount == 0 )); then
+        green "No old backups — all within ${KEEP_DAYS} days."
     else
-        green "Deleted ${count} old backup(s)."
+        green "Deleted ${bcount} old backup(s)."
+    fi
+
+    # ── 2. Old log files ─────────────────────────────────────────────────
+    echo
+    bold; echo "Removing log files older than ${LOG_KEEP_DAYS} days…"; hr
+
+    local lcount=0
+    if [[ -d "$LOG_DIR" ]]; then
+        while IFS= read -r -d '' f; do
+            echo "  Deleting: ${f#${SCRIPT_DIR}/}"
+            rm -f "$f"
+            (( lcount++ ))
+        done < <(find "$LOG_DIR" -type f \( -name '*.log' -o -name '*.log.*' \) \
+                    -mtime +"$LOG_KEEP_DAYS" -print0)
+    fi
+
+    if (( lcount == 0 )); then
+        green "No old log files — all within ${LOG_KEEP_DAYS} days."
+    else
+        green "Deleted ${lcount} old log file(s) from ${LOG_DIR}."
     fi
     hr
 }

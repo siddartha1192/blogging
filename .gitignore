@@ -35,6 +35,10 @@ certbot/
 # Database backups — keep locally, never commit
 backups/
 
+# Nginx log files — rotated/cleaned automatically, never commit
+logs/nginx/*.log
+logs/nginx/*.log.*
+
 # Runtime uploads are managed by the Docker volume — do NOT commit them.
 # To deploy images via Git, put them in static/seed/ instead.
 static/uploads/

@@ -72,12 +72,13 @@ ok
 
 # ── Step 2: Issue certificate via webroot ─────────────────────────────────
 echo
-bold "Requesting Let's Encrypt certificate for ${DOMAIN}…"
+bold "Requesting Let's Encrypt certificate for ${DOMAIN} and www.${DOMAIN}…"
 hr
 $COMPOSE exec -T certbot certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     --domain "$DOMAIN" \
+    --domain "www.${DOMAIN}" \
     --email "$EMAIL" \
     --agree-tos \
     --no-eff-email \
@@ -129,7 +130,7 @@ fi
 
 hr
 green "SSL setup complete!"
-echo "  Site      : https://${DOMAIN}"
+echo "  Site      : https://${DOMAIN}  (www.${DOMAIN} redirects here)"
 echo "  Cert dir  : /etc/letsencrypt/live/${DOMAIN}/"
 echo "  Renewal   : ${RENEW_SCRIPT}"
 echo "  Cron      : daily at 00:00 and 12:00"

@@ -83,6 +83,7 @@ $COMPOSE exec -T certbot certbot certonly \
     --agree-tos \
     --no-eff-email \
     --non-interactive \
+    --expand \
     --keep-until-expiring
 echo
 green "Certificate issued successfully."
